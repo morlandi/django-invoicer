@@ -2,3 +2,13 @@
 *.db
 .DS_Store
 test_project/media/*
+*.pyo
+.installed.cfg
+bin
+develop-eggs
+dist
+downloads
+eggs
+parts
+src/*.egg-info
+env
