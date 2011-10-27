@@ -25,17 +25,17 @@ class Entity(models.Model):
 
     def __unicode__(self):
         return self.name
-    
+
     def full_address(self):
         return "%s, %s, %s %s" %(self.address, self.city, self.state, self.zip_code,)
 
 class Client(Entity):
     project = models.CharField(max_length=128, blank=True)
-    
+
     @models.permalink
     def get_absolute_url(self):
         return ('invoicer:client', (), {'id':self.id})
-    
+
     def receipts_to_date(self):
         items = LineItem.objects.filter(invoice__client=self).only("price", "quantity", "taxable", "invoice__company__tax_rate").select_related("invoice__company")
         total = 0
@@ -48,7 +48,7 @@ class Company(Entity):
     numbering_prefix = models.CharField(max_length=10, unique=True)
     billing_email = models.EmailField(max_length=80, blank=True)
     tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
-    
+
     class Meta:
         verbose_name_plural = "Companies"
 
@@ -59,7 +59,7 @@ class Company(Entity):
     def tax_multiplier(self):
         return self.tax_rate/100 + 1
 
-        
+
 class Terms(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField(max_length=256)
@@ -76,13 +76,13 @@ class AbstractItem(models.Model):
     cost = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=True)
     taxable = models.BooleanField()
-    
+
     class Meta:
         abstract = True
-    
+
     def __unicode__(self):
         return unicode(self.name)
-        
+
 class LineItem(AbstractItem):
     item = models.ForeignKey("Item", blank=True, null=True)
     quantity = models.DecimalField(max_digits=7, decimal_places=2)
@@ -101,7 +101,7 @@ class LineItem(AbstractItem):
         if self.taxable:
             total = total * self.invoice.company.tax_multiplier()
         return total.quantize(Decimal('.01'))
-        
+
     def save(self, *args, **kwargs):
         if self.item_id is not None:
             self.name = self.item.name
@@ -133,11 +133,11 @@ class Invoice(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     status_notes = models.CharField(max_length=128, blank=True)
     terms = models.ForeignKey(Terms)
-    
+
     @models.permalink
     def get_absolute_url(self):
         return ('invoicer:invoice', (), {'id':self.invoice_number})
-    
+
     def __unicode__(self):
         return self.invoice_number
 
@@ -178,7 +178,8 @@ def stylesheet_upload(instance, filename):
     file, ext = os.path.splitext(filename)
     file_slug = '%s%s' %(slugify(file), ext,)
     company_id = unicode(instance.company.id)
-    upload_dir = settings.get("INVOICER_UPLOAD_DIR", "invoicer").strip("/")
+    #upload_dir = settings.get("INVOICER_UPLOAD_DIR", "invoicer").strip("/")
+    upload_dir = getattr(settings, "INVOICER_UPLOAD_DIR", "invoicer").strip("/")
     return os.path.join(upload_dir, "stylesheets", company_id, file_slug)
 
 class Stylesheet(models.Model):
@@ -190,6 +191,6 @@ class Stylesheet(models.Model):
     feedback_text = models.TextField(max_length=256, blank=True)
     misc_text = models.TextField(max_length=256, blank=True)
     thank_you_text = models.TextField(max_length=256, blank=True)
-    
+
 class Item(AbstractItem):
     pass
