@@ -12,3 +12,5 @@ eggs
 parts
 src/*.egg-info
 env
+invoicer/stylesheets/*
+*.sublime-workspace
