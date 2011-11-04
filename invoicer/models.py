@@ -48,6 +48,7 @@ class Company(Entity):
     numbering_prefix = models.CharField(max_length=10, unique=True)
     billing_email = models.EmailField(max_length=80, blank=True)
     tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
+    use_compact_invoice = models.BooleanField(default = False)
 
     class Meta:
         verbose_name_plural = "Companies"
@@ -71,11 +72,12 @@ class Terms(models.Model):
         return self.name
 
 class AbstractItem(models.Model):
-    name = models.CharField(max_length=128, blank=True)
+    #name = models.CharField(max_length=128, blank=True)
+    name = models.TextField(blank=True)
     description = models.CharField(max_length=256, blank=True)
     cost = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=True)
-    taxable = models.BooleanField()
+    taxable = models.BooleanField(default = True)
 
     class Meta:
         abstract = True
@@ -85,7 +87,7 @@ class AbstractItem(models.Model):
 
 class LineItem(AbstractItem):
     item = models.ForeignKey("Item", blank=True, null=True)
-    quantity = models.DecimalField(max_digits=7, decimal_places=2)
+    quantity = models.DecimalField(max_digits=7, decimal_places=2, default="1")
     invoice = models.ForeignKey("Invoice", related_name="line_items", editable=False)
 
     class Meta:

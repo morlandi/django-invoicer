@@ -12,7 +12,7 @@ class InvoiceInline(admin.TabularInline):
     model = Invoice
     max_num = 0
     extra = 0
-    
+
 class StylesheetInline(admin.StackedInline):
     model = Stylesheet
     extra = 1
@@ -21,7 +21,7 @@ class StylesheetInline(admin.StackedInline):
 class CompanyAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
-            "fields": ("name", "numbering_prefix", "billing_email", "tax_rate"),
+            "fields": ("name", "numbering_prefix", "billing_email", "tax_rate", "use_compact_invoice", ),
         },),
         ("Contact Info", {
             "fields": ("contact_person", "phone_number", "email", "website"),
@@ -37,10 +37,10 @@ class ClientAdmin(admin.ModelAdmin):
     model = Client
     list_display = ("name", "email", "phone_number", "full_address", "receipts_to_date")
     inlines = (InvoiceInline,)
-    
+
 class TermsAdmin(admin.ModelAdmin):
     model = Terms
-    
+
 class InvoiceAdmin(admin.ModelAdmin):
     model = Invoice
     list_display = ("invoice_number", "client", "company", "invoice_date", "due_date", "status",)

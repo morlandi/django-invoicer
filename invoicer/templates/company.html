@@ -1,0 +1,11 @@
+{% extends "client.html" %}
+{% load i18n %}
+
+{% block entity_title %}{% trans 'Company' %}{% endblock entity_title %}
+
+{% block entity_details %}
+        <tr><td>{% trans 'website' %}</td><td>{{entity.website}}</td></tr>
+        <tr><td>{% trans 'numbering_prefix' %}</td><td>{{entity.numbering_prefix}}</td></tr>
+        <tr><td>{% trans 'billing_email' %}</td><td>{{entity.billing_email}}</td></tr>
+        <tr><td>{% trans 'tax_rate' %}</td><td>{{entity.tax_rate}}</td></tr>
+{% endblock entity_details %}

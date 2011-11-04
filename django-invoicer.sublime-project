@@ -3,7 +3,7 @@
 	[
 		{
 			"path": "/Users/morlandi/src/github/django-invoicer",
-            "folder_exclude_patterns": [".idea", ".settings", "develop-eggs", "eggs", "downloads", "parts"]
+            "folder_exclude_patterns": [".idea", ".settings", "develop-eggs", "eggs", "downloads", "parts", "env"]
 		}
 	]
 }

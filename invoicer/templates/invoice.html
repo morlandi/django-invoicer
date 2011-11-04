@@ -5,8 +5,11 @@
 {% block stylesheet %}
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/invoice.css" />
     <link rel="stylesheet" type="text/css" href="{{ stylesheet.stylesheet.url }}" />
 {% endblock %}
+
+{% block body_class %}invoice{% endblock %}
 
 {% block header %}{% endblock %}
 {% block nav %}{% endblock %}
@@ -140,6 +143,13 @@ $(function(){
     jQuery(".edit:not(.nosave):not(.area):not(.taxable)").editable(ajaxEdit, {
         indicator:indicator,
         placeholder:'',
+    });
+    jQuery(".edit.area:not(.nosave)").editable(ajaxEdit, {
+        type:'textarea',
+        rows:3,
+        placeholder:'',
+        submit:'Accept Changes',
+        cancel:'Cancel'
     });
     jQuery(".edit.nosave:not(.area)").editable(function(value, settings){return value;}, {placeholder:''});
     jQuery(".edit.area.nosave").editable(function(value, settings){return value;}, {
@@ -283,22 +293,25 @@ $(function(){
     <table id="items">
         <thead>
             <tr>
-                <th class="item text" >Item</th>
+                <th class="item" >Item</th>
                 <th class="price">Price</th>
                 <th class="quantity">Qty.</th>
                 <th class="ext_price">Ext. Price</th>
-                <th class="taxable">Taxable</th>
+                <th class="taxable">{%if not compact%}Taxable{%endif%}</th>
                 <th class="delete"></th>
             </tr>
         </thead>
         <tbody>
             {% for form in formset.forms %}
             <tr id="{{form.id.html_name}}" name="{{form.instance.id}}" class="item-row">
-                <td id="{{form.name.html_name}}" class="item text edit">{{form.initial.name}}<div id="{{form.description.html_name}}" class="description text edit">{{form.initial.description}}</div></td>
+                <!-- <td id="{{form.name.html_name}}" class="item text edit">{{form.initial.name}}<div id="{{form.description.html_name}}" class="description text edit">{{form.initial.description}}</div></td> -->
+                {% autoescape off %}
+                <td id="{{form.name.html_name}}" class="item area edit">{{form.initial.name}}</td>
+                {% endautoescape %}
                 <td id="{{form.price.html_name}}" class="numeric price edit recalc">{{ form.initial.price|floatformat:2 }}</td>
                 <td id="{{form.quantity.html_name}}" class="numeric quantity edit recalc">{{ form.initial.quantity }}</td>
                 <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2 }}</td>
-                <td id="{{form.taxable.html_name}}" class="taxable edit recalc">{{ form.initial.taxable|yesno:"Y,N" }}</td>
+                <td id="{{form.taxable.html_name}}" class="taxable edit recalc {%if compact%}concealed{%endif%}">{{ form.initial.taxable|yesno:"Y,N" }}</td>
                 <td id="{{form.DELETE.html_name}}" class="delete">
                     <input type="checkbox" name="{{form.DELETE.html_name}}"></input>
                 </td>

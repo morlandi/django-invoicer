@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div>
+    {% block entity_title %}{% trans 'Client' %}{% endblock entity_title %}: {{client}}
+
+    <table>
+        <tr><td>{% trans 'name' %}</td><td>{{entity.name}}</td></tr>
+        <tr><td>{% trans 'contact_person' %}</td><td>{{entity.contact_person}}</td></tr>
+        <tr><td>{% trans 'address' %}</td><td>{{entity.address}}</td></tr>
+        <tr><td>{% trans 'city' %}</td><td>{{entity.city}}</td></tr>
+        <tr><td>{% trans 'state' %}</td><td>{{entity.state}}</td></tr>
+        <tr><td>{% trans 'zip_code' %}</td><td>{{entity.zip_code}}</td></tr>
+        <tr><td>{% trans 'phone_number' %}</td><td>{{entity.phone_number}}</td></tr>
+        <tr><td>{% trans 'email' %}</td><td>{{entity.email}}</td></tr>
+        {% block entity_details %}
+        <tr><td>{% trans 'project' %}</td><td>{{entity.project}}</td></tr>
+        {% endblock entity_details %}
+    </table>
+
+</div>
+{% endblock content %}
