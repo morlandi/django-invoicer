@@ -17,11 +17,11 @@ from invoicer.models import Client, Company, Invoice, LineItem
 def view_invoice(request, id):
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, invoice_number=id)
-    stylesheet = invoice.company.stylesheets.all()[0]
+    #stylesheet = invoice.company.stylesheets.all()[0]
     formset = LineItemFormset(instance=invoice)
     context = {
         'invoice':invoice,
-        "stylesheet":stylesheet,
+        #"stylesheet":stylesheet,
         "invoice_form":InvoiceForm(),
         "formset":formset,
         "compact": invoice.company.use_compact_invoice,

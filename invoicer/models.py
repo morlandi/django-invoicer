@@ -50,6 +50,10 @@ class Company(Entity):
     tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
     use_compact_invoice = models.BooleanField(default = False)
 
+    logo = models.ImageField(max_length=512, blank=True, default='', upload_to='logo')
+    invoice_footer = models.TextField(blank=True)
+    invoice_stylesheet = models.TextField(blank=True)
+
     class Meta:
         verbose_name_plural = "Companies"
 

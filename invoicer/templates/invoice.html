@@ -6,7 +6,7 @@
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7/themes/base/jquery-ui.css" />
     <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/invoice.css" />
-    <link rel="stylesheet" type="text/css" href="{{ stylesheet.stylesheet.url }}" />
+    <!-- <link rel="stylesheet" type="text/css" href="{{ stylesheet.stylesheet.url }}" /> -->
 {% endblock %}
 
 {% block body_class %}invoice{% endblock %}
@@ -236,7 +236,7 @@ $(function(){
 {% endblock %}
 
 {% block content %}
-    <h1 id="logo" alt="logo">{{ invoice.company.name }}</h1>
+    <h1 id="logo" alt="logo"><img src="{{invoice.company.logo.url}}" /></h1>
 
     <table id="meta">
         <tbody>
@@ -247,10 +247,6 @@ $(function(){
             <tr>
                 <td>Date</td>
                 <td class="edit" id="{{ invoice_form.invoice_date.html_name }}">{{ invoice.invoice_date|date }}</td>
-            </tr>
-            <tr>
-                <td>Amount Due</td>
-                <td>$<span class="total-value total">{{ invoice.total }}</span></td>
             </tr>
         </tbody>
     </table>
@@ -306,7 +302,7 @@ $(function(){
             <tr id="{{form.id.html_name}}" name="{{form.instance.id}}" class="item-row">
                 <!-- <td id="{{form.name.html_name}}" class="item text edit">{{form.initial.name}}<div id="{{form.description.html_name}}" class="description text edit">{{form.initial.description}}</div></td> -->
                 {% autoescape off %}
-                <td id="{{form.name.html_name}}" class="item area edit">{{form.initial.name}}</td>
+                <td id="{{form.name.html_name}}" class="item area edit">{{form.initial.name|linebreaks}}</td>
                 {% endautoescape %}
                 <td id="{{form.price.html_name}}" class="numeric price edit recalc">{{ form.initial.price|floatformat:2 }}</td>
                 <td id="{{form.quantity.html_name}}" class="numeric quantity edit recalc">{{ form.initial.quantity }}</td>

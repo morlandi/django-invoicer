@@ -29,6 +29,9 @@ class CompanyAdmin(admin.ModelAdmin):
         ("Address", {
             "fields": ("address", "city", "state", "zip_code",), "classes": ("wide",)
         },),
+        ("Invoices customization", {
+            "fields": ("invoice_stylesheet", "invoice_footer", "logo",), "classes": ("wide",)
+        },),
     )
     model = Company
     inlines = (StylesheetInline,)
