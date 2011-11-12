@@ -236,7 +236,9 @@ $(function(){
 {% endblock %}
 
 {% block content %}
+    {% if invoice.company.logo %}
     <h1 id="logo" alt="logo"><img src="{{invoice.company.logo.url}}" /></h1>
+    {% endif %}
 
     <table id="meta">
         <tbody>
@@ -252,32 +254,14 @@ $(function(){
     </table>
     <hr />
     <table id='contacts'>
-        <thead>
-            <tr>
-                <th>Company</th>
-                <th>Client</th>
-            </tr>
-        </thead>
         <tbody>
             <tr>
-                <td id="company">
-                    <p class="name">{{ invoice.company.name }}</p>
-                    <p class="address">{{ invoice.company.address }}</p>
-                    <p class="address2"><span class="city">{{ invoice.company.city }}</span>,&nbsp;<span class="state">{{ invoice.company.state }}</span>&nbsp;<span class="zip">{{ invoice.company.zip_code }}</span></p>
-                    <p class="phone">{{ invoice.company.phone_number }}</p>
-                    <p class="website">{{ invoice.company.website }}</p>
-                    <p class="email">{{ invoice.company.email }}</p>
-                </td>
-
-                <td id="client">
-                    <p class="name edit nosave">{{ invoice.client.name }}</p>
-                    {% if invoice.client.address %}
-                    <p class="address edit nosave">{{ invoice.client.address }}</p>
-                    <p class="address2"><span class="city edit nosave">{{ invoice.client.city }}</span>,&nbsp;<span class="state edit nosave">{{ invoice.client.state }}</span>&nbsp;<span class="zip edit nosave">{{ invoice.client.zip_code }}</span></p>
-                    {% endif %}
-                    <p class="phone edit nosave">{{ invoice.client.phone_number }}</p>
-                    <p class="website edit nosave">{{ invoice.client.website }}</p>
-                    <p class="email edit nosave">{{ invoice.client.email }}</p>
+                <td id="administrative_address" class="area edit">{{ invoice.client.administrative_address|linebreaks }}</td>
+                <td>&nbsp;</td>
+                <td>
+                    <div>{{invoice.client.name}}</div>
+                    <br />
+                    <div id="delivery_address" class="area edit">{{ invoice.client.delivery_address|linebreaks }}</div>
                 </td>
             </tr>
         </tbody>
@@ -301,9 +285,7 @@ $(function(){
             {% for form in formset.forms %}
             <tr id="{{form.id.html_name}}" name="{{form.instance.id}}" class="item-row">
                 <!-- <td id="{{form.name.html_name}}" class="item text edit">{{form.initial.name}}<div id="{{form.description.html_name}}" class="description text edit">{{form.initial.description}}</div></td> -->
-                {% autoescape off %}
                 <td id="{{form.name.html_name}}" class="item area edit">{{form.initial.name|linebreaks}}</td>
-                {% endautoescape %}
                 <td id="{{form.price.html_name}}" class="numeric price edit recalc">{{ form.initial.price|floatformat:2 }}</td>
                 <td id="{{form.quantity.html_name}}" class="numeric quantity edit recalc">{{ form.initial.quantity }}</td>
                 <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2 }}</td>

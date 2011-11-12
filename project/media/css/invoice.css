@@ -47,3 +47,11 @@
 .edit:hover {
     background-color: #EEFF88;
 }
+
+.invoice #contacts {
+    width: 100%;
+}
+
+.invoice #contacts td {
+    width: 33%;
+}

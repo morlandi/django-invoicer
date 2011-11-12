@@ -29,7 +29,11 @@ class Entity(models.Model):
     def full_address(self):
         return "%s, %s, %s %s" %(self.address, self.city, self.state, self.zip_code,)
 
-class Client(Entity):
+class Client(models.Model):
+    name = models.CharField(max_length=128)
+    vat_id = models.CharField(max_length=32)
+    administrative_address = models.TextField(blank=True)
+    delivery_address = models.TextField(blank=True)
     project = models.CharField(max_length=128, blank=True)
 
     @models.permalink

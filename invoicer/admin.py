@@ -19,26 +19,26 @@ class StylesheetInline(admin.StackedInline):
     max_num = 1
 
 class CompanyAdmin(admin.ModelAdmin):
-    fieldsets = (
-        (None, {
-            "fields": ("name", "numbering_prefix", "billing_email", "tax_rate", "use_compact_invoice", ),
-        },),
-        ("Contact Info", {
-            "fields": ("contact_person", "phone_number", "email", "website"),
-        },),
-        ("Address", {
-            "fields": ("address", "city", "state", "zip_code",), "classes": ("wide",)
-        },),
-        ("Invoices customization", {
-            "fields": ("invoice_stylesheet", "invoice_footer", "logo",), "classes": ("wide",)
-        },),
-    )
+    # fieldsets = (
+    #     (None, {
+    #         "fields": ("name", "numbering_prefix", "billing_email", "tax_rate", "use_compact_invoice", ),
+    #     },),
+    #     ("Contact Info", {
+    #         "fields": ("contact_person", "phone_number", "email", "website"),
+    #     },),
+    #     ("Address", {
+    #         "fields": ("address", "city", "state", "zip_code",), "classes": ("wide",)
+    #     },),
+    #     ("Invoices customization", {
+    #         "fields": ("invoice_stylesheet", "invoice_footer", "logo",), "classes": ("wide",)
+    #     },),
+    # )
     model = Company
     inlines = (StylesheetInline,)
 
 class ClientAdmin(admin.ModelAdmin):
     model = Client
-    list_display = ("name", "email", "phone_number", "full_address", "receipts_to_date")
+    list_display = ("name", "vat_id", "receipts_to_date")
     inlines = (InvoiceInline,)
 
 class TermsAdmin(admin.ModelAdmin):
