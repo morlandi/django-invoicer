@@ -4,7 +4,7 @@
 
 {% block stylesheet %}
     {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}js/jqueryui/1.7/themes/base/jquery-ui.css" />
     <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/invoice.css" />
     <!-- <link rel="stylesheet" type="text/css" href="{{ stylesheet.stylesheet.url }}" /> -->
 {% endblock %}
@@ -15,8 +15,8 @@
 {% block nav %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block scripts %}{{ block.super }}
-<script type = "text/javascript" src = "http://ajax.googleapis.com/ajax/libs/jqueryui/1.7/jquery-ui.min.js"></script>
-<script src="http://cdn.jquerytools.org/1.1.2/tiny/jquery.tools.min.js"></script>
+<script type = "text/javascript" src = "{{ MEDIA_URL }}/js/jqueryui/1.7/jquery-ui.min.js"></script>
+<script src="{{ MEDIA_URL }}js/jquerytools/1.1.2/tiny/jquery.tools.min.js"></script>
 <script type="text/javascript">
 $(function(){
     var indicator = 'Saving...',
