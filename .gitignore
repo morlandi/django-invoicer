@@ -1,5 +1,4 @@
 *.pyc
-*.db
 .DS_Store
 test_project/media/*
 *.pyo
