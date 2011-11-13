@@ -31,7 +31,8 @@ class Entity(models.Model):
 
 class Client(models.Model):
     name = models.CharField(max_length=128)
-    vat_id = models.CharField(max_length=32)
+    vat_id = models.CharField(max_length=32, blank=True)
+    fiscal_code = models.CharField(max_length=32, blank=True)
     administrative_address = models.TextField(blank=True)
     delivery_address = models.TextField(blank=True)
     project = models.CharField(max_length=128, blank=True)
@@ -137,6 +138,8 @@ class Invoice(models.Model):
     )
     company = models.ForeignKey(Company, related_name='invoices')
     client = models.ForeignKey(Client, related_name='invoices')
+    administrative_address = models.TextField(blank=True)
+    delivery_address = models.TextField(blank=True)
     invoice_date = models.DateField(default=date.today)
     invoice_number = models.CharField(max_length=20, blank=True)
     due_date = models.DateField(default=date.today)

@@ -40,6 +40,19 @@ $(function(){
             var data = {};
             var td = jQuery(this);
             var trs = jQuery("tr.item-row");
+            
+            // gather data for invoice
+            var invoice_fields = jQuery(".invoice_field");
+            invoice_fields.each(function(){
+                var field = jQuery(this);
+                var input = field.find(":input");
+                if ( input.length ) {
+                    data[field.attr("id")] = input.attr("value");  
+                } else {
+                    data[field.attr("id")] = field.text();  
+                }
+            });
+            
             //gather the data for each item row
             trs.each(function(){
                 var tr = jQuery(this);
@@ -256,13 +269,14 @@ $(function(){
     <table id='contacts'>
         <tbody>
             <tr>
-                <td id="administrative_address" class="area edit">{{ invoice.client.administrative_address|linebreaks }}</td>
                 <td>&nbsp;</td>
-                <td>
-                    <div>{{invoice.client.name}}</div>
-                    <br />
-                    <div id="delivery_address" class="area edit">{{ invoice.client.delivery_address|linebreaks }}</div>
-                </td>
+                <td>&nbsp;</td>
+                <td>{{invoice.client.name}}</td>
+            </tr>
+            <tr>
+                <td id="administrative_address" class="invoice_field area edit">{{ invoice.administrative_address|linebreaks }}</td>
+                <td>&nbsp;</td>
+                <td id="delivery_address" class="invoice_field area edit">{{ invoice.delivery_address|linebreaks }}</td>
             </tr>
         </tbody>
     </table>

@@ -1,4 +1,5 @@
-import json
+#import json
+from django.utils import simplejson
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
@@ -35,33 +36,60 @@ def edit_invoice(request, id):
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, invoice_number=id)
     if request.is_ajax() and request.method == "POST":
+        
+        if settings.DEBUG:
+            for key, value in request.POST.items():
+                print "%s: %s" % (key, value)
+                
         formset = LineItemFormset(request.POST, instance=invoice)
         #invoice processing and line processing ought to be separate views
         invoice_form = InvoiceForm(request.POST, instance=invoice)
-        if invoice_form.is_valid():
+        
+        if invoice_form.is_valid() and formset.is_valid():
             invoice_form.save()
-            response = {
-                "status":"success",
-                "value":request.POST["value"],
-                "element_id":request.POST["element_id"]
-            }
-            return HttpResponse(json.dumps(response, separators=(',',':')), mimetype='application/json')
-        elif formset.is_valid():
             formset.save()
             response = {
-                "status":"success",
-                "value":request.POST["value"],
-                "element_id":request.POST["element_id"]
+                "status": "success",
+                "value": request.POST["value"],
+                "element_id": request.POST["element_id"]
             }
-            return HttpResponse(json.dumps(response, separators=(',',':')), mimetype='application/json')
+            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
         else:
             errors = {}
+            for field in invoice_form:
+                if field.errors:
+                    errors[field.html_name] = field.errors.as_text()
             for form in formset.forms:
                 for field in form:
                     if field.errors:
                         errors[field.html_name] = field.errors.as_text()
             response = {"status":"error", "errors":errors}
-            return HttpResponse(json.dumps(response, separators=(',',':')), mimetype='application/json')
+            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
+        
+#        if invoice_form.is_valid():
+#            invoice_form.save()
+#            response = {
+#                "status":"success",
+#                "value":request.POST["value"],
+#                "element_id":request.POST["element_id"]
+#            }
+#            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
+#        elif formset.is_valid():
+#            formset.save()
+#            response = {
+#                "status":"success",
+#                "value":request.POST["value"],
+#                "element_id":request.POST["element_id"]
+#            }
+#            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
+#        else:
+#            errors = {}
+#            for form in formset.forms:
+#                for field in form:
+#                    if field.errors:
+#                        errors[field.html_name] = field.errors.as_text()
+#            response = {"status":"error", "errors":errors}
+#            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
 
 @login_required
 @csrf_exempt

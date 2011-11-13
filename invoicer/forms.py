@@ -6,6 +6,7 @@ from invoicer.models import *
 class InvoiceForm(ModelForm):
     class Meta:
         model = Invoice
+        fields = ('administrative_address', 'delivery_address',)
 
 class LineItemForm(ModelForm):
     class Meta:
