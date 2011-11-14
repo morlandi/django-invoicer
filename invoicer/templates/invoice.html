@@ -161,8 +161,13 @@ $(function(){
         type:'textarea',
         rows:3,
         placeholder:'',
-        submit:'Accept Changes',
-        cancel:'Cancel'
+        submit:'Accept Changes XXX',
+        cancel:'Cancel',
+        data: function(value, settings) {
+            /* Convert <br> to newline. */
+            var retval = value.replace(/<br[\s\/]?>/gi, '\n');
+            return retval;
+        }
     });
     jQuery(".edit.nosave:not(.area)").editable(function(value, settings){return value;}, {placeholder:''});
     jQuery(".edit.area.nosave").editable(function(value, settings){return value;}, {
@@ -274,9 +279,11 @@ $(function(){
                 <td>{{invoice.client.name}}</td>
             </tr>
             <tr>
-                <td id="administrative_address" class="invoice_field area edit">{{ invoice.administrative_address|linebreaks }}</td>
+                <td id="administrative_address" class="invoice_field area edit">{{ invoice.administrative_address }}</td>
                 <td>&nbsp;</td>
-                <td id="delivery_address" class="invoice_field area edit">{{ invoice.delivery_address|linebreaks }}</td>
+                {% autoescape off %}
+                <td id="delivery_address" class="invoice_field area edit">{{ invoice.delivery_address|linebreaksbr }}</td>
+                {% endautoescape %}
             </tr>
         </tbody>
     </table>

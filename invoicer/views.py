@@ -1,6 +1,5 @@
 #import json
 from django.utils import simplejson
-
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
@@ -13,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from invoicer.forms import InvoiceForm, LineItemForm, LineItemFormset, ReducedLineItemForm
 from invoicer.models import Client, Company, Invoice, LineItem
+from django.utils.safestring import mark_safe 
 
 @login_required
 def view_invoice(request, id):
@@ -44,13 +44,13 @@ def edit_invoice(request, id):
         formset = LineItemFormset(request.POST, instance=invoice)
         #invoice processing and line processing ought to be separate views
         invoice_form = InvoiceForm(request.POST, instance=invoice)
-        
+
         if invoice_form.is_valid() and formset.is_valid():
             invoice_form.save()
             formset.save()
             response = {
                 "status": "success",
-                "value": request.POST["value"],
+                "value": mark_safe(request.POST["value"].replace('\n', '<br />')),
                 "element_id": request.POST["element_id"]
             }
             return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
