@@ -6,6 +6,8 @@ from django.conf import settings
 from django.contrib.localflavor.us.models import PhoneNumberField, USStateField
 from django.db import models
 from django.template.defaultfilters import slugify
+from invoicer.utils import generate_next_invoice_number
+from invoicer.utils import get_company
 
 __all__ = ['Client', 'Company', 'Terms', 'LineItem', 'InvoiceManager',
             'Invoice', 'Stylesheet', 'Item']
@@ -47,6 +49,9 @@ class Client(models.Model):
         for item in items:
             total += item.total()
         return total
+
+    def __unicode__(self):
+        return self.name
 
 class Company(Entity):
     website = models.URLField(max_length=100, blank=True)
@@ -138,24 +143,30 @@ class Invoice(models.Model):
     )
     company = models.ForeignKey(Company, related_name='invoices')
     client = models.ForeignKey(Client, related_name='invoices')
-    administrative_address = models.TextField(blank=True)
-    delivery_address = models.TextField(blank=True)
+    left_address = models.TextField(blank=True)
+    right_address = models.TextField(blank=True)
     invoice_date = models.DateField(default=date.today)
-    invoice_number = models.CharField(max_length=20, blank=True)
+    year = models.IntegerField()
+    number = models.IntegerField(blank=True, help_text='leave empty for automatic assignment')
     due_date = models.DateField(default=date.today)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=10, default="unsent", choices=STATUS_CHOICES)
     status_notes = models.CharField(max_length=128, blank=True)
-    terms = models.ForeignKey(Terms)
+    terms = models.ForeignKey(Terms, null=True, blank=True)
+    tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
+
+    class Meta:
+        ordering = ('-year', '-number',)
+        unique_together = (('company', 'number', 'year',),)
 
     @models.permalink
     def get_absolute_url(self):
-        return ('invoicer:invoice', (), {'id':self.invoice_number})
+        return ('invoicer:invoice', (), {'year':self.year, 'number':self.number,})
 
     def __unicode__(self):
-        return self.invoice_number
+        return '%d/%d' % (self.number, self.year)
 
-    def get_invoice_number(self):
-        return "%s%05d" %(self.company.numbering_prefix, self.id,)
+    #def get_invoice_number(self):
+    #    return "%s%05d" %(self.company.numbering_prefix, self.id,)
 
     def taxable_amount(self):
         taxable = 0
@@ -180,12 +191,30 @@ class Invoice(models.Model):
             total += line.total()
         return total
 
-    def save(self, force_insert=False, force_update=False):
-        super(Invoice, self).save(force_insert, force_update)
-        if not self.invoice_number:
-            self.invoice_number = self.get_invoice_number()
-            self.save()
+    def fix_values(self):
+        dirty = False
+        if self.number is None:
+            self.number = generate_next_invoice_number(obj)
+            dirty = True
+        if self.company is None:
+            self.company = get_company()
+            dirty = True
+        if len(self.left_address)==0 and len(self.right_address)==0:
+            if len(self.client.delivery_address)==0:
+                self.right_address = self.client.administrative_address
+            else:
+                self.right_address = self.client.delivery_address
+                self.left_address = self.client.administrative_address
+            dirty = True
+        return dirty
 
+    def save(self, force_insert=False, force_update=False):
+        self.year = self.invoice_date.year
+        if self.tax_rate is None:
+            self.tax_rate = self.company.tax_rate
+        super(Invoice, self).save(force_insert, force_update)
+        if self.fix_values():
+            self.save()
 
 def stylesheet_upload(instance, filename):
     file, ext = os.path.splitext(filename)

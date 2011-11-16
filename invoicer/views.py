@@ -15,9 +15,9 @@ from invoicer.models import Client, Company, Invoice, LineItem
 from django.utils.safestring import mark_safe 
 
 @login_required
-def view_invoice(request, id):
+def view_invoice(request, year, number):
     invoices = Invoice.objects.select_related()
-    invoice = get_object_or_404(invoices, invoice_number=id)
+    invoice = get_object_or_404(invoices, year=int(year), number=int(number))
     #stylesheet = invoice.company.stylesheets.all()[0]
     formset = LineItemFormset(instance=invoice)
     context = {
@@ -32,9 +32,9 @@ def view_invoice(request, id):
 @login_required
 @require_POST
 @csrf_exempt
-def edit_invoice(request, id):
+def edit_invoice(request, year, number):
     invoices = Invoice.objects.select_related()
-    invoice = get_object_or_404(invoices, invoice_number=id)
+    invoice = get_object_or_404(invoices, year=int(year), number=int(number))
     if request.is_ajax() and request.method == "POST":
         
         if settings.DEBUG:
@@ -93,9 +93,9 @@ def edit_invoice(request, id):
 
 @login_required
 @csrf_exempt
-def add_line(request, id):
+def add_line(request, year, number):
     formClass = LineItemForm
-    invoice = get_object_or_404(Invoice, invoice_number=id)
+    invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
     if invoice.company.use_compact_invoice:
         formClass = ReducedLineItemForm
     if request.method == "POST":

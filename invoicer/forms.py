@@ -1,18 +1,24 @@
-from django.forms import ModelForm
+from django import forms
 from django.forms.models import inlineformset_factory
-
+from django.utils.translation import ugettext_lazy as _
 from invoicer.models import *
 
-class InvoiceForm(ModelForm):
+class InvoiceCreationForm(forms.ModelForm):
+
     class Meta:
         model = Invoice
-        fields = ('administrative_address', 'delivery_address',)
+        fields = ('number', 'client', 'invoice_date',)
+     
+class InvoiceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = ('left_address', 'right_address',)
 
-class LineItemForm(ModelForm):
+class LineItemForm(forms.ModelForm):
     class Meta:
         model = LineItem
 
-class ReducedLineItemForm(ModelForm):
+class ReducedLineItemForm(forms.ModelForm):
     class Meta:
         model = LineItem
         exclude = ('taxable', 'description', 'item', 'cost' )
