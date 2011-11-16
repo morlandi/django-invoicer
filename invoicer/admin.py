@@ -7,7 +7,7 @@ from invoicer.utils import get_company
 
 class LineItemInline(admin.TabularInline):
     model = LineItem
-    fields = ("item", "name", "cost", "price", "quantity", "taxable")
+    fields = ("item", "name", "price", "quantity", "taxable")
     extra = 1
 
 class InvoiceInline(admin.TabularInline):

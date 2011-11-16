@@ -21,7 +21,7 @@ class LineItemForm(forms.ModelForm):
 class ReducedLineItemForm(forms.ModelForm):
     class Meta:
         model = LineItem
-        exclude = ('taxable', 'description', 'item', 'cost' )
+        exclude = ('taxable', 'description', 'item', )
 
 LineItemFormset = inlineformset_factory(
     Invoice, LineItem,

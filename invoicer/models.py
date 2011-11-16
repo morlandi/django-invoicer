@@ -86,11 +86,10 @@ class Terms(models.Model):
         return self.name
 
 class AbstractItem(models.Model):
-    #name = models.CharField(max_length=128, blank=True)
     name = models.TextField(blank=True)
     description = models.CharField(max_length=256, blank=True)
-    cost = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
-    price = models.DecimalField(max_digits=7, decimal_places=2, blank=True)
+    #cost = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    price = models.DecimalField(max_digits=7, decimal_places=2)
     taxable = models.BooleanField(default = True)
 
     class Meta:
@@ -122,7 +121,7 @@ class LineItem(AbstractItem):
         if self.item_id is not None:
             self.name = self.item.name
             self.description = self.item.description
-            self.cost = self.item.cost
+            #self.cost = self.item.cost
             self.price = self.item.price
             self.taxable = self.item.taxable
         super(LineItem, self).save(*args, **kwargs)
