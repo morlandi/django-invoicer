@@ -12,24 +12,24 @@ from invoicer.utils import get_company
 __all__ = ['Client', 'Company', 'Terms', 'LineItem', 'InvoiceManager',
             'Invoice', 'Stylesheet', 'Item']
 
-class Entity(models.Model):
-    name = models.CharField(max_length=128)
-    contact_person = models.CharField(max_length=128, blank=True)
-    address = models.CharField(max_length=100, blank=True)
-    city = models.CharField(max_length=60, blank=True)
-    state = USStateField(blank=True)
-    zip_code = models.CharField(max_length=10, blank=True)
-    phone_number = PhoneNumberField(blank=True)
-    email = models.EmailField(max_length=80, blank=True)
+# class Entity(models.Model):
+#     name = models.CharField(max_length=128)
+#     contact_person = models.CharField(max_length=128, blank=True)
+#     address = models.CharField(max_length=100, blank=True)
+#     city = models.CharField(max_length=60, blank=True)
+#     state = USStateField(blank=True)
+#     zip_code = models.CharField(max_length=10, blank=True)
+#     phone_number = PhoneNumberField(blank=True)
+#     email = models.EmailField(max_length=80, blank=True)
 
-    class Meta:
-        abstract = True
+#     class Meta:
+#         abstract = True
 
-    def __unicode__(self):
-        return self.name
+#     def __unicode__(self):
+#         return self.name
 
-    def full_address(self):
-        return "%s, %s, %s %s" %(self.address, self.city, self.state, self.zip_code,)
+#     def full_address(self):
+#         return "%s, %s, %s %s" %(self.address, self.city, self.state, self.zip_code,)
 
 class Client(models.Model):
     name = models.CharField(max_length=128)
@@ -53,9 +53,11 @@ class Client(models.Model):
     def __unicode__(self):
         return self.name
 
-class Company(Entity):
-    website = models.URLField(max_length=100, blank=True)
-    numbering_prefix = models.CharField(max_length=10, unique=True)
+class Company(models.Model):
+    #website = models.URLField(max_length=100, blank=True)
+    #numbering_prefix = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=128)
+    location = models.CharField(max_length=60, blank=True)
     billing_email = models.EmailField(max_length=80, blank=True)
     tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
     use_compact_invoice = models.BooleanField(default = False)
@@ -141,6 +143,7 @@ class Invoice(models.Model):
         ("other", "Other"),
     )
     company = models.ForeignKey(Company, related_name='invoices')
+    location = models.CharField(max_length=60, blank=True)
     client = models.ForeignKey(Client, related_name='invoices')
     left_address = models.TextField(blank=True)
     right_address = models.TextField(blank=True)
@@ -204,6 +207,9 @@ class Invoice(models.Model):
             else:
                 self.right_address = self.client.delivery_address
                 self.left_address = self.client.administrative_address
+            dirty = True
+        if len(self.location)==0:
+            self.location = self.company.location
             dirty = True
         return dirty
 

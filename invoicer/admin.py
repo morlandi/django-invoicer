@@ -59,7 +59,7 @@ class InvoiceAdmin(admin.ModelAdmin):
     readonly_fields = ("company", "year", )
     date_hierarchy = 'invoice_date'
     fieldsets = (
-        (None, {"fields": (("number", "client", "tax_rate", "company",), ("invoice_date", "year",), ("terms", "due_date",), ("status", "status_notes",), )}),
+        (None, {"fields": (("number", "client", "tax_rate", "company",), ("invoice_date", "location", "year",), ("terms", "due_date",), ("status", "status_notes",), )}),
         ('Address', {'fields': (('left_address','right_address',),),}),
     )
     add_fieldsets = (

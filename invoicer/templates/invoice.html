@@ -258,6 +258,29 @@ $(function(){
     <h1 id="logo" alt="logo"><img src="{{invoice.company.logo.url}}" /></h1>
     {% endif %}
 
+    <table id="invoice_header">
+        <tbody>
+            <tr>
+                <td>
+                    <div>{{invoice.location}}, {{invoice.invoice_date|date:"DATE_FORMAT"}}</div>
+                    <div>Fattura n. {{invoice.number}}/{{invoice.year}}</div>
+                    <br />
+                    <div>Cliente:</div>
+                    <div>{{invoice.client.name}}</div>
+                    <div>{{invoice.client.vat_id}}</div>
+                    <div>{{invoice.client.fiscal_code}}</div>
+                    <div>{{invoice.left_address}}</div>
+                </td>
+                <td>&nbsp;</td>
+                <td>
+                    <div>{{invoice.client.name}}</div>
+                    <div>{{invoice.right_address}}</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+
     <table id="meta">
         <tbody>
             <tr>
@@ -270,7 +293,6 @@ $(function(){
             </tr>
         </tbody>
     </table>
-    <hr />
     <table id='contacts'>
         <tbody>
             <tr>

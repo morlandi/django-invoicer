@@ -54,4 +54,19 @@
 
 .invoice #contacts td {
     width: 33%;
+    border: 1px solid #fcc;
+}
+
+.invoice #invoice_header {
+    width: 100%;
+}
+
+.invoice #invoice_header tr {
+    height: 140px;
+}
+
+.invoice #invoice_header td {
+    width: 33%;
+    border: 1px solid #fcc;
+    vertical-align: top;
 }
