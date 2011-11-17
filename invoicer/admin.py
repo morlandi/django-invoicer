@@ -17,10 +17,10 @@ class InvoiceInline(admin.TabularInline):
     max_num = 0
     extra = 0
 
-class StylesheetInline(admin.StackedInline):
-    model = Stylesheet
-    extra = 1
-    max_num = 1
+#class StylesheetInline(admin.StackedInline):
+#    model = Stylesheet
+#    extra = 1
+#    max_num = 1
 
 class CompanyAdmin(admin.ModelAdmin):
     # fieldsets = (
@@ -38,7 +38,7 @@ class CompanyAdmin(admin.ModelAdmin):
     #     },),
     # )
     model = Company
-    inlines = (StylesheetInline,)
+    #inlines = (StylesheetInline,)
 
 class ClientAdmin(admin.ModelAdmin):
     model = Client
@@ -59,7 +59,7 @@ class InvoiceAdmin(admin.ModelAdmin):
     readonly_fields = ("company", "year", )
     date_hierarchy = 'invoice_date'
     fieldsets = (
-        (None, {"fields": (("number", "client", "tax_rate", "company",), ("invoice_date", "location", "year",), ("terms", "due_date",), ("status", "status_notes",), )}),
+        (None, {"fields": (("number", "client", "tax_rate", "company",), ("invoice_date", "location", "year",), ("terms", "due_date",), ("status", "status_notes",), 'footer', )}),
         ('Address', {'fields': (('left_address','right_address',),),}),
     )
     add_fieldsets = (
@@ -86,11 +86,20 @@ class InvoiceAdmin(admin.ModelAdmin):
        return super(InvoiceAdmin, self).get_form(request, obj, **defaults)
 
     def save_model(self, request, obj, form, change):
-        obj.company = get_company()
         obj.year = obj.invoice_date.year
-        if obj.number is None:
-            obj.number = generate_next_invoice_number(obj)
+        obj.company = get_company()
+        if not change:
+            # new invoice: fill attributes with suitable defaults
+            if len(obj.client.delivery_address)==0:
+                obj.right_address = obj.client.administrative_address
+            else:
+                obj.right_address = obj.client.delivery_address
+                obj.left_address = obj.client.administrative_address
+            obj.location = obj.company.location
+            obj.footer = obj.company.invoice_footer
+            obj.tax_rate = obj.company.tax_rate
         super(InvoiceAdmin, self).save_model(request, obj, form, change)
+
 
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Client, ClientAdmin)

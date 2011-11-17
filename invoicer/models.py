@@ -10,7 +10,7 @@ from invoicer.utils import generate_next_invoice_number
 from invoicer.utils import get_company
 
 __all__ = ['Client', 'Company', 'Terms', 'LineItem', 'InvoiceManager',
-            'Invoice', 'Stylesheet', 'Item']
+            'Invoice', 'Item']
 
 # class Entity(models.Model):
 #     name = models.CharField(max_length=128)
@@ -37,7 +37,7 @@ class Client(models.Model):
     fiscal_code = models.CharField(max_length=32, blank=True)
     administrative_address = models.TextField(blank=True)
     delivery_address = models.TextField(blank=True)
-    project = models.CharField(max_length=128, blank=True)
+    #project = models.CharField(max_length=128, blank=True)
 
     @models.permalink
     def get_absolute_url(self):
@@ -64,7 +64,7 @@ class Company(models.Model):
 
     logo = models.ImageField(max_length=512, blank=True, default='', upload_to='logo')
     invoice_footer = models.TextField(blank=True)
-    invoice_stylesheet = models.TextField(blank=True)
+    #invoice_stylesheet = models.TextField(blank=True)
 
     class Meta:
         verbose_name_plural = "Companies"
@@ -155,6 +155,7 @@ class Invoice(models.Model):
     status_notes = models.CharField(max_length=128, blank=True)
     terms = models.ForeignKey(Terms, null=True, blank=True)
     tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
+    footer = models.TextField(blank=True)
 
     class Meta:
         ordering = ('-year', '-number',)
@@ -193,51 +194,38 @@ class Invoice(models.Model):
             total += line.total()
         return total
 
-    def fix_values(self):
+    def fix_internal_values(self):
         dirty = False
-        if self.number is None:
-            self.number = generate_next_invoice_number(obj)
-            dirty = True
         if self.company is None:
             self.company = get_company()
-            dirty = True
-        if len(self.left_address)==0 and len(self.right_address)==0:
-            if len(self.client.delivery_address)==0:
-                self.right_address = self.client.administrative_address
-            else:
-                self.right_address = self.client.delivery_address
-                self.left_address = self.client.administrative_address
-            dirty = True
-        if len(self.location)==0:
-            self.location = self.company.location
             dirty = True
         return dirty
 
     def save(self, force_insert=False, force_update=False):
         self.year = self.invoice_date.year
-        if self.tax_rate is None:
-            self.tax_rate = self.company.tax_rate
+        if self.number is None:
+            self.number = generate_next_invoice_number(self)
         super(Invoice, self).save(force_insert, force_update)
-        if self.fix_values():
-            self.save()
+        #if self.fix_internal_values():
+            #self.save()
 
-def stylesheet_upload(instance, filename):
-    file, ext = os.path.splitext(filename)
-    file_slug = '%s%s' %(slugify(file), ext,)
-    company_id = unicode(instance.company.id)
-    #upload_dir = settings.get("INVOICER_UPLOAD_DIR", "invoicer").strip("/")
-    upload_dir = getattr(settings, "INVOICER_UPLOAD_DIR", "invoicer").strip("/")
-    return os.path.join(upload_dir, "stylesheets", company_id, file_slug)
-
-class Stylesheet(models.Model):
-    company = models.ForeignKey("Company", related_name="stylesheets")
-    name = models.CharField(max_length=128)
-    description = models.CharField(max_length=256)
-    stylesheet = models.FileField(upload_to=stylesheet_upload)
-    introduction_text = models.TextField(max_length=256, blank=True)
-    feedback_text = models.TextField(max_length=256, blank=True)
-    misc_text = models.TextField(max_length=256, blank=True)
-    thank_you_text = models.TextField(max_length=256, blank=True)
+#def stylesheet_upload(instance, filename):
+#    file, ext = os.path.splitext(filename)
+#    file_slug = '%s%s' %(slugify(file), ext,)
+#    company_id = unicode(instance.company.id)
+#    #upload_dir = settings.get("INVOICER_UPLOAD_DIR", "invoicer").strip("/")
+#    upload_dir = getattr(settings, "INVOICER_UPLOAD_DIR", "invoicer").strip("/")
+#    return os.path.join(upload_dir, "stylesheets", company_id, file_slug)
+#
+#class Stylesheet(models.Model):
+#    company = models.ForeignKey("Company", related_name="stylesheets")
+#    name = models.CharField(max_length=128)
+#    description = models.CharField(max_length=256)
+#    stylesheet = models.FileField(upload_to=stylesheet_upload)
+#    introduction_text = models.TextField(max_length=256, blank=True)
+#    feedback_text = models.TextField(max_length=256, blank=True)
+#    misc_text = models.TextField(max_length=256, blank=True)
+#    thank_you_text = models.TextField(max_length=256, blank=True)
 
 class Item(AbstractItem):
     pass

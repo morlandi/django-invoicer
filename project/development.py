@@ -19,8 +19,8 @@ TEMPLATE_DEBUG=DEBUG
 EMAIL_HOST='localhost'
 EMAIL_PORT = 1025
 
-MIDDLEWARE_CLASSES = list(MIDDLEWARE_CLASSES) + ['project.middleware.QueryCountDebugMiddleware',]
-MIDDLEWARE_CLASSES = list(MIDDLEWARE_CLASSES) + ['project.middleware.DebugFooter',]
+#MIDDLEWARE_CLASSES = list(MIDDLEWARE_CLASSES) + ['project.middleware.QueryCountDebugMiddleware',]
+#MIDDLEWARE_CLASSES = list(MIDDLEWARE_CLASSES) + ['project.middleware.DebugFooter',]
 try:
     import IPython
     from IPython.Debugger import Tracer

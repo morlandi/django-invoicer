@@ -153,15 +153,20 @@ $(function(){
             jQuery(".total-value.total").text(total.toFixed(2));
         }
 
-    jQuery(".edit:not(.nosave):not(.area):not(.taxable)").editable(ajaxEdit, {
+    jQuery(".edit:not(.area):not(.taxable)").editable(ajaxEdit, {
         indicator:indicator,
-        placeholder:'',
+        placeholder:''
     });
-    jQuery(".edit.area:not(.nosave)").editable(ajaxEdit, {
+    jQuery(".edit.taxable").editable(ajaxEdit, {
+        type:"select",
+        data:{'Y':'Y', 'N':'N'},
+        onblur:"submit"
+    });
+    jQuery(".edit.area").editable(ajaxEdit, {
         type:'textarea',
         rows:3,
         placeholder:'',
-        submit:'Accept Changes XXX',
+        submit:'Accept Changes',
         cancel:'Cancel',
         data: function(value, settings) {
             /* Convert <br> to newline. */
@@ -169,6 +174,7 @@ $(function(){
             return retval;
         }
     });
+    /*
     jQuery(".edit.nosave:not(.area)").editable(function(value, settings){return value;}, {placeholder:''});
     jQuery(".edit.area.nosave").editable(function(value, settings){return value;}, {
         type:'textarea',
@@ -177,11 +183,7 @@ $(function(){
         submit:'Accept Changes',
         cancel:'Cancel'
     });
-    jQuery(".edit.taxable").editable(ajaxEdit, {
-        type:"select",
-        data:{'Y':'Y', 'N':'N'},
-        onblur:"submit"
-    });
+    */
     jQuery("td.recalc").change(function(){
         var element = jQuery(this),
             price, quantity, ext_price;
@@ -254,124 +256,111 @@ $(function(){
 {% endblock %}
 
 {% block content %}
-    {% if invoice.company.logo %}
-    <h1 id="logo" alt="logo"><img src="{{invoice.company.logo.url}}" /></h1>
-    {% endif %}
+    <div id="invoice-wrapper">
+        <div id="logo">
+            <img alt="{{invoice.company.name}}" src="{{invoice.company.logo.url}}" />
+        </div>
+        <div id="header">
+            <table>
+                <tbody>
+                <tr>
+                    <td>
+                        <div>{{invoice.location}}, {{invoice.invoice_date|date:"DATE_FORMAT"}}</div>
+                        <div>Fattura n. {{invoice.number}}/{{invoice.year}}</div>
+                        <br />
+                        <div>Cliente:</div>
+                        <div>{{invoice.client.name}}</div>
+                        <div>{{invoice.client.vat_id}}</div>
+                        <div>{{invoice.client.fiscal_code}}</div>
+                        <div id="left_address" class="invoice_field area edit">{{invoice.left_address|linebreaksbr}}</div>
+                    </td>
+                    <td>&nbsp;</td>
+                    <td>
+                        <div>{{invoice.client.name}}</div>
+                        <div id="right_address" class="invoice_field area edit">{{invoice.right_address|linebreaksbr}}</div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="body">
+            {{ formset.management_form }}
+            <input type="hidden" id="trigger-row-id" value="" />
+            <table id="items">
+                <thead>
+                <tr>
+                    <th class="item" >&nbsp;</th>
+                    <th class="price">Prezzo unitario</th>
+                    <th class="quantity">Quantità</th>
+                    <th class="ext_price">Prezzo totale</th>
+                    <th class="taxable blank">{%if not compact%}Taxable{%endif%}</th>
+                    <th class="delete blank"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for form in formset.forms %}
+                    <tr id="{{form.id.html_name}}" name="{{form.instance.id}}" class="item-row">
+                        <!-- <td id="{{form.name.html_name}}" class="item text edit">{{form.initial.name}}<div id="{{form.description.html_name}}" class="description text edit">{{form.initial.description}}</div></td> -->
+                        <td id="{{form.name.html_name}}" class="item area edit">{{form.initial.name|linebreaks}}</td>
+                        <td id="{{form.price.html_name}}" class="numeric price edit recalc">{{ form.initial.price|floatformat:2 }}</td>
+                        <td id="{{form.quantity.html_name}}" class="numeric quantity edit recalc">{{ form.initial.quantity }}</td>
+                        <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2 }}</td>
+                        <td id="{{form.taxable.html_name}}" class="taxable edit recalc {%if compact%}concealed{%endif%}">{{ form.initial.taxable|yesno:"Y,N" }}</td>
+                        <td id="{{form.DELETE.html_name}}" class="delete">
+                            <input type="checkbox" name="{{form.DELETE.html_name}}"></input>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr><td colspan="4" class="blank">&nbsp;</td></tr>
+                <tr>
+                    <td class="blank"> </td>
+                    <td colspan="2" class="total-line">Totale imponibile</td>
+                    <td class="numeric total-value subtotal">{{ invoice.subtotal|floatformat:2 }}</td>
+                    <td colspan="2" class="blank"> </td>
+                </tr>
+                <tr>
+                    <td class="blank"> </td>
+                    <td colspan="2" class="total-line">IVA (<span class="tax_rate">{{ invoice.company.tax_rate }}</span>%)</td>
+                    <td class="numeric total-value tax">{{ invoice.tax|floatformat:2 }}</td>
+                    <td colspan="2" class="blank"> </td>
+                </tr>
+                <tr>
+                    <td class="blank"> </td>
+                    <td colspan="2" class="total-line bold">TOTALE</td>
+                    <td class="numeric total-value total bold">{{ invoice.total|floatformat:2 }}</td>
+                    <td colspan="2" class="blank"> </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="terms">
+            <br />
+            <div>terms</div>
+            <div>terms</div>
+            <div>terms</div>
+        </div>
+        <div id="footer">
+            {{ invoice.footer }}
+        </div>
+    <div>
 
-    <table id="invoice_header">
-        <tbody>
-            <tr>
-                <td>
-                    <div>{{invoice.location}}, {{invoice.invoice_date|date:"DATE_FORMAT"}}</div>
-                    <div>Fattura n. {{invoice.number}}/{{invoice.year}}</div>
-                    <br />
-                    <div>Cliente:</div>
-                    <div>{{invoice.client.name}}</div>
-                    <div>{{invoice.client.vat_id}}</div>
-                    <div>{{invoice.client.fiscal_code}}</div>
-                    <div>{{invoice.left_address}}</div>
-                </td>
-                <td>&nbsp;</td>
-                <td>
-                    <div>{{invoice.client.name}}</div>
-                    <div>{{invoice.right_address}}</div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-
-    <table id="meta">
-        <tbody>
-            <tr>
-                <td class=>Invoice</td>
-                <td>{{invoice.number}}/{{invoice.year}}</td>
-            </tr>
-            <tr>
-                <td>Date</td>
-                <td class="edit" id="{{ invoice_form.invoice_date.html_name }}">{{ invoice.invoice_date|date }}</td>
-            </tr>
-        </tbody>
-    </table>
-    <table id='contacts'>
-        <tbody>
-            <tr>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>{{invoice.client.name}}</td>
-            </tr>
-            <tr>
-                <td id="left_address" class="invoice_field area edit">{{ invoice.left_address }}</td>
-                <td>&nbsp;</td>
-                {% autoescape off %}
-                <td id="right_address" class="invoice_field area edit">{{ invoice.right_address|linebreaksbr }}</td>
-                {% endautoescape %}
-            </tr>
-        </tbody>
-    </table>
-
-	{% if stylesheet.introduction_text %}<div><p class="edit area nosave">{{ stylesheet.introduction_text }}</p></div>{% endif %}
-    {{ formset.management_form }}
-    <input type="hidden" id="trigger-row-id" value="" />
-    <table id="items">
-        <thead>
-            <tr>
-                <th class="item" >Item</th>
-                <th class="price">Price</th>
-                <th class="quantity">Qty.</th>
-                <th class="ext_price">Ext. Price</th>
-                <th class="taxable">{%if not compact%}Taxable{%endif%}</th>
-                <th class="delete"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for form in formset.forms %}
-            <tr id="{{form.id.html_name}}" name="{{form.instance.id}}" class="item-row">
-                <!-- <td id="{{form.name.html_name}}" class="item text edit">{{form.initial.name}}<div id="{{form.description.html_name}}" class="description text edit">{{form.initial.description}}</div></td> -->
-                <td id="{{form.name.html_name}}" class="item area edit">{{form.initial.name|linebreaks}}</td>
-                <td id="{{form.price.html_name}}" class="numeric price edit recalc">{{ form.initial.price|floatformat:2 }}</td>
-                <td id="{{form.quantity.html_name}}" class="numeric quantity edit recalc">{{ form.initial.quantity }}</td>
-                <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2 }}</td>
-                <td id="{{form.taxable.html_name}}" class="taxable edit recalc {%if compact%}concealed{%endif%}">{{ form.initial.taxable|yesno:"Y,N" }}</td>
-                <td id="{{form.DELETE.html_name}}" class="delete">
-                    <input type="checkbox" name="{{form.DELETE.html_name}}"></input>
-                </td>
-            </tr>
-            {% endfor %}
-            <tr>
-                <td class="blank"> </td>
-                <td colspan="2" class="total-line">Subtotal</td>
-                <td class="numeric total-value subtotal">{{ invoice.subtotal|floatformat:2 }}</td>
-                <td colspan="2" class="blank"> </td>
-            </tr>
-            <tr>
-                <td class="blank"> </td>
-                <td colspan="2" class="total-line">Tax (<span class="tax_rate">{{ invoice.company.tax_rate }}</span>%)</td>
-                <td class="numeric total-value tax">{{ invoice.tax|floatformat:2 }}</td>
-                <td colspan="2" class="blank"> </td>
-            </tr>
-            <tr>
-                <td class="blank"> </td>
-                <td colspan="2" class="total-line">Total</td>
-                <td class="numeric total-value total">{{ invoice.total|floatformat:2 }}</td>
-                <td colspan="2" class="blank"> </td>
-            </tr>
-        </tbody>
-    </table>
-
+    {% comment %}
     <form id="payment-status">
         <fieldset>
             <legend>Invoice Status</legend>
             <h3>{{ invoice.get_status_display }}</h3>
         </fieldset>
     </form>
+    {% endcomment %}
 
+    {% comment %}
     <div id="info">
         {% if invoice.terms.description %}<p class="edit area nosave">{{ invoice.terms.description }}</p>{% endif %}
         {% if stylesheet.misc_text %}<p class="edit area nosave">{{ stylesheet.misc_text }}</p>{% endif %}
         {% if stylesheet.feedback_text %}<p class="edit area nosave">{{ stylesheet.feedback_text }}</p>{% endif %}
         {% if stylesheet.thank_you_text %}<p class="edit area nosave">{{ stylesheet.thank_you_text }}</p>{% endif %}
     </div>
+    {% endcomment %}
 
     <div id="confirm-delete" class="dialog">
         <h2>Delete Row</h2>
@@ -399,5 +388,4 @@ $(function(){
         <span><a href="#add" class="add-button">Add</a> | <a href="#delete" class="delete-button">Delete</a></span>
     </div>
 
-<hr />
 {% endblock %}
