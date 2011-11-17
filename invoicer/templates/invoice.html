@@ -17,6 +17,66 @@
 {% block scripts %}{{ block.super }}
 <script type = "text/javascript" src = "{{ MEDIA_URL }}/js/jqueryui/1.7/jquery-ui.min.js"></script>
 <script src="{{ MEDIA_URL }}js/jquerytools/1.1.2/tiny/jquery.tools.min.js"></script>
+
+<script src="{{ MEDIA_URL }}js/mootools-core-1.3.2.js"></script>
+<script src="{{ MEDIA_URL }}js/mootools-more-1.3.2.1.js"></script>
+<script type="text/javascript">
+
+    // http://davidwalsh.name/editable-content-mootools-php-mysql
+    window.addEvent('domready', function() {
+        //find the editable areas
+        $$('.xeditable').each(function(el) {
+            //add double-click and blur events
+            el.addEvent('dblclick',function() {
+                //store "before" message
+                var before = el.get('html').trim();
+                //erase current
+                el.set('html','');
+                //replace current text/content with input or textarea element
+                if(el.hasClass('textarea'))
+                {
+                    var input = new Element('textarea', { 'class':'box', 'text':before });
+                    input.store('before', before);
+                    input.addEvent('keydown', function(e) { if(e.key == 'esc') { this.store('cancelled', 1); this.fireEvent('blur'); } });
+                }
+                else
+                {
+                    var input = new Element('input', { 'class':'box', 'value':before });
+                    input.store('before', before);
+                    //blur input when they press "Enter"
+                    input.addEvent('keydown', function(e) { if (e.key=='esc') this.store('cancelled',1); if(e.key=='enter' || e.key=='esc') { this.fireEvent('blur'); } });
+                }
+                input.inject(el).select();
+                //add blur event to input
+                input.addEvent('blur', function() {
+                    if ( this.retrieve('cancelled',0) ) {
+                        el.set('text', this.retrieve('before', ''));
+                        return;
+                    }
+                    val = input.get('value').trim();
+                    //get value, place it in original element
+                    el.set('text',val).addClass(val != '' ? '' : 'editable-empty');
+                    //save respective record
+                    //var url = 'mootools-editable-content.php?id=' + el.get('rel') + '&content=' + el.get('text');
+                    var url = "{% url invoicer:edit_invoice invoice.year invoice.number %}";
+                    var request = new Request.JSON({
+                        url:url,
+                        method:'post',
+                        onSuccess: function(result){
+                            alert(result.value);
+                        }.bind(this),
+                        onFailure: function(result){
+                            el.set('text', this.retrieve('before', ''));
+                            alert('failure');
+                        }.bind(this)
+                    }).send();
+                });
+            });
+        });
+    });
+
+</script>
+
 <script type="text/javascript">
 $(function(){
     var indicator = 'Saving...',
@@ -259,6 +319,16 @@ $(function(){
     <div id="invoice-wrapper">
         <div id="logo">
             <img alt="{{invoice.company.name}}" src="{{invoice.company.logo.url}}" />
+
+<br />
+<div class="xeditable" rel="32" title="Article Title">Editable Title</div>
+<p class="xeditable textarea" title="Content Paragraph" rel="33">
+  This is an editable paragraph.
+    This is an editable paragraph.
+    This is an editable paragraph.
+    This is an editable paragraph.
+</p>
+
         </div>
         <div id="header">
             <table>

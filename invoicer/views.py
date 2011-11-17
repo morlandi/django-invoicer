@@ -33,6 +33,14 @@ def view_invoice(request, year, number):
 @require_POST
 @csrf_exempt
 def edit_invoice(request, year, number):
+
+    response = {
+        "status": "success",
+        "value": 'value',
+        "element_id": "element_id"
+    }
+    return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
+
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, year=int(year), number=int(number))
     if request.is_ajax() and request.method == "POST":
