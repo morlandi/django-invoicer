@@ -69,6 +69,9 @@ class Company(models.Model):
     class Meta:
         verbose_name_plural = "Companies"
 
+    def __unicode__(self):
+        return self.name
+
     @models.permalink
     def get_absolute_url(self):
         return ('invoicer:company', (), {'id':self.id})
