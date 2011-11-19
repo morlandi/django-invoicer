@@ -6,8 +6,10 @@ from django.conf import settings
 from django.contrib.localflavor.us.models import PhoneNumberField, USStateField
 from django.db import models
 from django.template.defaultfilters import slugify
+from django.db.models import signals
 from invoicer.utils import generate_next_invoice_number
 from invoicer.utils import get_company
+from invoicer.handlers import organize_files_by_pk
 
 __all__ = ['Client', 'Company', 'Terms', 'LineItem', 'InvoiceManager',
             'Invoice', 'Item']
@@ -79,6 +81,7 @@ class Company(models.Model):
     def tax_multiplier(self):
         return self.tax_rate/100 + 1
 
+signals.post_save.connect(organize_files_by_pk, sender=Company)
 
 class Terms(models.Model):
     name = models.CharField(max_length=128)
