@@ -3,6 +3,7 @@
 test_project/media/*
 *.pyo
 .installed.cfg
+.pydevproject.bak
 bin
 develop-eggs
 dist
@@ -13,3 +14,4 @@ src/*.egg-info
 env
 invoicer/stylesheets/*
 *.sublime-workspace
+project/media/invoicer/company/*
