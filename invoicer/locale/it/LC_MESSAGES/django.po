@@ -1,0 +1,87 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-19 10:55+0100\n"
+"PO-Revision-Date: 2011-11-19 11:01+0100\n"
+"Last-Translator: Mario Orlandi <morlandi@brainstorm.it>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: templates/client.html:6
+msgid "Client"
+msgstr "Cliente"
+
+#: templates/client.html:9
+msgid "name"
+msgstr "nome"
+
+#: templates/client.html:10
+msgid "contact_person"
+msgstr "persona di riferimento"
+
+#: templates/client.html:11
+msgid "address"
+msgstr "indirizzo"
+
+#: templates/client.html:12
+msgid "city"
+msgstr "citttà"
+
+#: templates/client.html:13
+msgid "state"
+msgstr "stato"
+
+#: templates/client.html:14
+msgid "zip_code"
+msgstr "CAP"
+
+#: templates/client.html:15
+msgid "phone_number"
+msgstr "numero di telefono"
+
+#: templates/client.html:16
+msgid "email"
+msgstr "email"
+
+#: templates/client.html:18
+msgid "project"
+msgstr "progetto"
+
+#: templates/company.html:4
+msgid "Company"
+msgstr "Società"
+
+#: templates/company.html:7
+msgid "website"
+msgstr "sito web"
+
+#: templates/company.html:8
+msgid "numbering_prefix"
+msgstr "prefisso numerico"
+
+#: templates/company.html:9
+msgid "billing_email"
+msgstr "email amministrativo"
+
+#: templates/company.html:10
+msgid "tax_rate"
+msgstr "aliquota"
+
+#: templates/invoice.html:387
+msgid "VAT ID"
+msgstr "P.IVA"
+
+#: templates/invoice.html:390
+msgid "Fiscal Code"
+msgstr "C.F."
+

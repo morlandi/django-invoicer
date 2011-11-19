@@ -3,6 +3,9 @@
 
 import os
 
+#NOTE: delayed ugettext
+ugettext = lambda s: s
+
 ADMINS = (
     ('Mario Orlandi', 'morlndi@brainstorm.it'),
 )
@@ -42,8 +45,12 @@ TIME_ZONE = 'Europe/Rome'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = 'it'
 
+LANGUAGES = (
+    ('en', ugettext('English')),
+    ('it', ugettext('Italian')),
+)
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not

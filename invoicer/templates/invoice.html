@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}Invoice {{invoice.number}}/{{invoice.year}}{% endblock %}
 
@@ -30,7 +31,7 @@
         var invoice_fields = $$(".invoice_field");
         invoice_fields.each(function(field){
             var id = field.get("id");
-            if (id) data[id] = field.get("text");  
+            if (id) data[id] = field.get("text");
         });
 
         // gather the data for each item row
@@ -40,7 +41,7 @@
             var tds = tr.getChildren("td");
             tds.each(function(td){
                 var id = td.get("id");
-                if (id) data[id] = td.get("text");  
+                if (id) data[id] = td.get("text");
             });
         });
 
@@ -142,19 +143,19 @@ $(function(){
             var data = {};
             var td = jQuery(this);
             var trs = jQuery("tr.item-row");
-            
+
             // gather data for invoice
             var invoice_fields = jQuery(".invoice_field");
             invoice_fields.each(function(){
                 var field = jQuery(this);
                 var input = field.find(":input");
                 if ( input.length ) {
-                    data[field.attr("id")] = input.attr("value");  
+                    data[field.attr("id")] = input.attr("value");
                 } else {
-                    data[field.attr("id")] = field.text();  
+                    data[field.attr("id")] = field.text();
                 }
             });
-            
+
             //gather the data for each item row
             trs.each(function(){
                 var tr = jQuery(this);
@@ -382,8 +383,12 @@ $(function(){
                         <br />
                         <div>Cliente:</div>
                         <div>{{invoice.client.name}}</div>
-                        <div>{{invoice.client.vat_id}}</div>
-                        <div>{{invoice.client.fiscal_code}}</div>
+                        {% if invoice.client.vat_id %}
+                            <div>{% trans 'VAT ID' %}: {{invoice.client.vat_id}}</div>
+                        {% endif %}
+                        {% if invoice.client.fiscal_code %}
+                            <div>{% trans 'Fiscal Code' %}: {{invoice.client.fiscal_code}}</div>
+                        {% endif %}
                         <div id="left_address" class="invoice_field area edit">{{invoice.left_address|linebreaksbr}}</div>
                     </td>
                     <td>&nbsp;</td>
