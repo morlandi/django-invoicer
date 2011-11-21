@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from invoicer.forms import InvoiceForm, LineItemForm, LineItemFormset, ReducedLineItemForm
 from invoicer.models import Client, Company, Invoice, LineItem
-from django.utils.safestring import mark_safe 
+from django.utils.safestring import mark_safe
 
 @login_required
 def view_invoice(request, year, number):
@@ -34,21 +34,14 @@ def view_invoice(request, year, number):
 @csrf_exempt
 def edit_invoice(request, year, number):
 
-    response = {
-        "status": "success",
-        "value": 'value',
-        "element_id": "element_id"
-    }
-    return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
-
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, year=int(year), number=int(number))
     if request.is_ajax() and request.method == "POST":
-        
+
         if settings.DEBUG:
             for key, value in request.POST.items():
                 print "%s: %s" % (key, value)
-                
+
         formset = LineItemFormset(request.POST, instance=invoice)
         #invoice processing and line processing ought to be separate views
         invoice_form = InvoiceForm(request.POST, instance=invoice)
@@ -58,8 +51,8 @@ def edit_invoice(request, year, number):
             formset.save()
             response = {
                 "status": "success",
-                "value": mark_safe(request.POST["value"].replace('\n', '<br />')),
-                "element_id": request.POST["element_id"]
+                "value": mark_safe(request.POST["_value"].replace('\n', '<br />')),
+                "element_id": request.POST["_element_id"]
             }
             return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
         else:
@@ -73,7 +66,7 @@ def edit_invoice(request, year, number):
                         errors[field.html_name] = field.errors.as_text()
             response = {"status":"error", "errors":errors}
             return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
-        
+
 #        if invoice_form.is_valid():
 #            invoice_form.save()
 #            response = {

@@ -1,18 +1,26 @@
 
-.xeditable:hover {
+.editable {
+    border: 1px dashed #fc0;
+    margin: -1px;
+}
+
+.editable:hover {
     background-color: #ffc;
+    border: 1px solid #fc0;
+    margin: -1px;
+}
+
+.editable-empty {
+    padding: 9px 0;
+    margin: -1px;
+    border: 1px dashed #fc0;
 }
 
 .textarea textarea {
-    height: 200px;
+    height: 60px;
     padding: 3px;
 }
 
-.editable-empty	{
-    background:#fffea1;
-    padding:20px;
-    border:1px dashed #fc0;
-}
 .box {
     border:1px solid #ccc;
     padding:5px;

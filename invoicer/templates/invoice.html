@@ -68,20 +68,39 @@
         var request = new Request.JSON({
             url:url,
             method:'post',
+            data:data,
             onSuccess: function(result){
-                alert(result.value);
+                processEditInvoiceResult(result);
             }.bind(this),
             onFailure: function(result){
-                element.set('text', oldValue);
-                alert('failure');
+                alert('failure:' + result.responseText);
             }.bind(this)
         }).send();
-    }
+    },
+
+    processEditInvoiceResult = function(result) {
+        if ( result.status=='success') {
+            var element = document.id(result.element_id);
+            element.set('text', result.value);
+        }
+        else {
+            var text = result.status;
+            text += '\n\n';
+            for ( var key in result.errors ) {
+                text += key + ': ' + result.errors[key] + '\n';
+            }
+            alert(text);
+        }
+    },
 
     // adapted from http://davidwalsh.name/editable-content-mootools-php-mysql
     window.addEvent('domready', function() {
+
         //find the editable areas
-        $$('.xeditable').each(function(el) {
+        $$('.editable').each(function(el) {
+            if ( el.get('text')=='' ) {
+                el.addClass('editable-empty');
+            }
             //add double-click and blur events
             el.addEvent('dblclick',function() {
                 //store "before" message
@@ -109,12 +128,19 @@
                         el.set('text', this.retrieve('before', ''));
                         return;
                     }
-                    val = input.get('value').trim();
+                    var oldValue = this.retrieve('before','');
+                    var newValue = input.get('value').trim();
                     //get value, place it in original element
-                    el.set('text',val).addClass(val != '' ? '' : 'editable-empty');
-                    editInvoice(el, this.retrieve('before',''), val);
+                    el.set('text',oldValue).addClass(newValue != '' ? '' : 'editable-empty');
+                    editInvoice(el, oldValue, newValue);
                 });
             });
+        });
+
+        console.log($$('.recalc'));
+        $$('.recalc').addEvent('change', function(){
+            alert('change');
+            console.log('recalc');
         });
     });
 
@@ -139,6 +165,8 @@ $(function(){
                 });
             });
         },
+
+        /*
         ajaxEdit = function(value, yysettings){
             var data = {};
             var td = jQuery(this);
@@ -231,6 +259,7 @@ $(function(){
             });
             return indicator;
         },
+        */
         calculate_totals = function () {
             var table = jQuery("#items"),
                 tax_rate = parseFloat(table.find("span.tax_rate").text())/100,
@@ -256,6 +285,7 @@ $(function(){
             jQuery(".total-value.total").text(total.toFixed(2));
         }
 
+    /*
     jQuery(".edit:not(.area):not(.taxable)").editable(ajaxEdit, {
         indicator:indicator,
         placeholder:''
@@ -272,12 +302,11 @@ $(function(){
         submit:'Accept Changes',
         cancel:'Cancel',
         data: function(value, settings) {
-            /* Convert <br> to newline. */
+            // Convert <br> to newline.
             var retval = value.replace(/<br[\s\/]?>/gi, '\n');
             return retval;
         }
     });
-    /*
     jQuery(".edit.nosave:not(.area)").editable(function(value, settings){return value;}, {placeholder:''});
     jQuery(".edit.area.nosave").editable(function(value, settings){return value;}, {
         type:'textarea',
@@ -363,15 +392,6 @@ $(function(){
         <div id="logo">
             <img alt="{{invoice.company.name}}" src="{{invoice.company.logo.url}}" />
 
-<br />
-<div id="ctlText" class="xeditable" rel="32" title="Article Title">Editable Title</div>
-<p id="ctlTextArea" class="xeditable textarea" title="Content Paragraph" rel="33">
-  This is an editable paragraph.
-    This is an editable paragraph.
-    This is an editable paragraph.
-    This is an editable paragraph.
-</p>
-
         </div>
         <div id="header">
             <table>
@@ -389,12 +409,12 @@ $(function(){
                         {% if invoice.client.fiscal_code %}
                             <div>{% trans 'Fiscal Code' %}: {{invoice.client.fiscal_code}}</div>
                         {% endif %}
-                        <div id="left_address" class="invoice_field area edit">{{invoice.left_address|linebreaksbr}}</div>
+                        <div id="left_address" class="invoice_field editable textarea">{{invoice.left_address|linebreaksbr}}</div>
                     </td>
                     <td>&nbsp;</td>
                     <td>
                         <div>{{invoice.client.name}}</div>
-                        <div id="right_address" class="invoice_field area edit">{{invoice.right_address|linebreaksbr}}</div>
+                        <div id="right_address" class="invoice_field editable textarea">{{invoice.right_address|linebreaksbr}}</div>
                     </td>
                 </tr>
                 </tbody>
@@ -418,11 +438,11 @@ $(function(){
                 {% for form in formset.forms %}
                     <tr id="{{form.id.html_name}}" name="{{form.instance.id}}" class="item-row">
                         <!-- <td id="{{form.name.html_name}}" class="item text edit">{{form.initial.name}}<div id="{{form.description.html_name}}" class="description text edit">{{form.initial.description}}</div></td> -->
-                        <td id="{{form.name.html_name}}" class="item area edit">{{form.initial.name|linebreaks}}</td>
-                        <td id="{{form.price.html_name}}" class="numeric price edit recalc">{{ form.initial.price|floatformat:2 }}</td>
-                        <td id="{{form.quantity.html_name}}" class="numeric quantity edit recalc">{{ form.initial.quantity }}</td>
+                        <td id="{{form.name.html_name}}" class="item editable textarea">{{form.initial.name|linebreaks}}</td>
+                        <td id="{{form.price.html_name}}" class="numeric price editable recalc">{{ form.initial.price|floatformat:2 }}</td>
+                        <td id="{{form.quantity.html_name}}" class="numeric quantity editable recalc">{{ form.initial.quantity }}</td>
                         <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2 }}</td>
-                        <td id="{{form.taxable.html_name}}" class="taxable edit recalc {%if compact%}concealed{%endif%}">{{ form.initial.taxable|yesno:"Y,N" }}</td>
+                        <td id="{{form.taxable.html_name}}" class="taxable editable recalc {%if compact%}concealed{%endif%}">{{ form.initial.taxable|yesno:"Y,N" }}</td>
                         <td id="{{form.DELETE.html_name}}" class="delete">
                             <input type="checkbox" name="{{form.DELETE.html_name}}"></input>
                         </td>
