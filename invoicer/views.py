@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from invoicer.forms import InvoiceForm, LineItemForm, LineItemFormset, ReducedLineItemForm
 from invoicer.models import Client, Company, Invoice, LineItem
 from django.utils.safestring import mark_safe
+from time import sleep
 
 @login_required
 def view_invoice(request, year, number):
@@ -95,6 +96,7 @@ def edit_invoice(request, year, number):
 @login_required
 @csrf_exempt
 def add_line(request, year, number):
+    sleep(1)
     formClass = LineItemForm
     invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
     if invoice.company.use_compact_invoice:

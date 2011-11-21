@@ -7,6 +7,7 @@
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}js/jqueryui/1.7/themes/base/jquery-ui.css" />
     <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/invoice.css" />
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}js/lightface/css/LightFace.css" />
     <!-- <link rel="stylesheet" type="text/css" href="{{ stylesheet.stylesheet.url }}" /> -->
 {% endblock %}
 
@@ -21,6 +22,13 @@
 
 <script src="{{ MEDIA_URL }}js/mootools-core-1.3.2.js"></script>
 <script src="{{ MEDIA_URL }}js/mootools-more-1.3.2.1.js"></script>
+
+<script src="{{ MEDIA_URL }}js/lightface/LightFace.js"></script>
+<script src="{{ MEDIA_URL }}js/lightface/LightFace.IFrame.js"></script>
+<script src="{{ MEDIA_URL }}js/lightface/LightFace.Image.js"></script>
+<script src="{{ MEDIA_URL }}js/lightface/LightFace.Request.js"></script>
+<script src="{{ MEDIA_URL }}js/lightface/LightFace.Static.js"></script>
+
 <script type="text/javascript">
 
     editInvoice = function(element, oldValue, newValue) {
@@ -82,6 +90,9 @@
         if ( result.status=='success') {
             var element = document.id(result.element_id);
             element.set('text', result.value);
+            if ( element.hasClass('recalc') ) {
+                recalcRow(element);
+            }
         }
         else {
             var text = result.status;
@@ -91,6 +102,38 @@
             }
             alert(text);
         }
+    },
+
+    recalcRow = function(element) {
+        var parent = element.getParent();
+        var price = parseFloat(parent.getChildren('.price').get('text'));
+        var quantity = parseFloat(parent.getChildren('.quantity').get('text'));
+        var ext_price = price * quantity;
+        parent.getChildren(".price").set('text', price.toFixed(2));
+        parent.getChildren(".quantity").set('text', quantity.toFixed(2));
+        parent.getChildren(".ext_price").set('text', ext_price.toFixed(2));
+        calculateTotals();
+    },
+
+    calculateTotals = function() {
+        var table = document.id('items');
+        var tax_rate = parseFloat(table.getElement('span.tax_rate').get('text')) / 100.0;
+        var subtotal = 0.0;
+        var tax = 0.0;
+
+        var trs = table.getElements("tr.item-row");
+        trs.each(function(row) {
+            var ext = parseFloat(row.getElement('.ext_price').get('text'));
+            var taxable = row.getElement('.taxable').get('text');
+            if ( taxable == "Y" ) {
+                tax += ext * tax_rate;
+            }
+            subtotal += ext;
+        });
+
+        table.getElement('.total-value.subtotal').set('text', subtotal.toFixed(2));
+        table.getElement('.total-value.tax').set('text', tax.toFixed(2));
+        table.getElement('.total-value.total').set('text', (subtotal+tax).toFixed(2));
     },
 
     // adapted from http://davidwalsh.name/editable-content-mootools-php-mysql
@@ -137,16 +180,77 @@
             });
         });
 
-        console.log($$('.recalc'));
-        $$('.recalc').addEvent('change', function(){
-            alert('change');
-            console.log('recalc');
+        /* create LightFace instance */
+        var modal = new LightFace({
+            width: 400,
+            height: 200,
+            draggable: true,
+            title: 'Hello from LightFace!',
+            content: '<p>This is the LightFace content!</p>',
+            buttons: [
+                { title: 'Close', event: function() { this.close(); }, color: 'blue' }
+            ],
+            resetOnScroll: true
         });
+
+        // open when link is clicked
+        document.id('testLightFace').addEvent('click',function(e){
+            e.stop();
+            modal.open();
+        });
+
+        document.id('testLightFaceRequest').addEvent('click',function(){
+            
+            ajaxFace = new LightFace.Request({
+                buttons: [
+                    { title: 'Submitter', event: function() { alert('hi!'); }, color: 'blue' },
+                    { title: 'Canceler', event: function() { this.close(); } }
+                ],
+                url: '{% url invoicer:add_line invoice.year invoice.number %}',
+                request: { 
+                    data: { 
+                        name: 'mario'
+                    },
+                    method: 'get'
+                },
+                title: 'AJAX Demo',
+                width: 350,
+                height: 250,
+                draggable: true,
+            }).open();
+            
+        });
+
+        /* create LightFace instance */
+        var modal2 = new LightFace.Request({
+            width: 600,
+            height: 400,
+            draggable: true,
+            title: 'Hello from LightFace!',
+            content: '<p>This is the LightFace content!</p>',
+            buttons: [
+                { title: 'Close', event: function() { this.close(); }, color: 'blue' }
+            ],
+            resetOnScroll: true
+        });
+
+        // open when link is clicked
+        document.id('testLightFaceRequestCustomized').addEvent('click',function(e){
+            e.stop();
+            modal2.open();
+            var form = document.id('add-modal');
+            modal2.load(form.get('html'),'This is the title!');
+            var url = '{% url invoicer:add_line invoice.year invoice.number %}';
+            var container = document.id('add-modal').getElement('.container');
+            modal2.loadex(url, 'get', {}, container);
+        });
+
     });
 
 </script>
 
 <script type="text/javascript">
+/*
 $(function(){
     var indicator = 'Saving...',
         rows = jQuery("#items tr.item-row"),
@@ -164,177 +268,7 @@ $(function(){
                     td.attr("id", pieces.join("-"));
                 });
             });
-        },
-
-        /*
-        ajaxEdit = function(value, yysettings){
-            var data = {};
-            var td = jQuery(this);
-            var trs = jQuery("tr.item-row");
-
-            // gather data for invoice
-            var invoice_fields = jQuery(".invoice_field");
-            invoice_fields.each(function(){
-                var field = jQuery(this);
-                var input = field.find(":input");
-                if ( input.length ) {
-                    data[field.attr("id")] = input.attr("value");
-                } else {
-                    data[field.attr("id")] = field.text();
-                }
-            });
-
-            //gather the data for each item row
-            trs.each(function(){
-                var tr = jQuery(this);
-                data[tr.attr("id")] = tr.attr("name");
-                var tds = tr.children("td");
-                tds.each(function(){
-                    var td = jQuery(this),
-                        input = td.find(":input");
-                    if (td.attr("id")){
-                        if (input.length) {
-                            if (input.attr("type") == "checkbox"){
-                                if (input.attr("checked")) {
-                                    data[td.attr("id")] = "delete";
-                                }
-                            }
-                            else{
-                                data[td.attr("id")] = input.attr("value");
-                            }
-                        }
-                        else {
-                            data[td.attr("id")] = td.text();
-                        }
-                    }
-                });
-            });
-
-            //send along the id and value so we know what was edited
-            data["element_id"] = td.attr("id");
-            data["value"] = value;
-
-            //correct for false == empty logic in django form processing
-            for (key in data) {
-                if (key.indexOf("taxable") !== -1 && data[key] !== "Y"){
-                    data[key] = "";
-                }
-            }
-
-            //add in the required formset fields
-            data["{{formset.management_form.TOTAL_FORMS.html_name}}"] = jQuery("#id_{{ formset.management_form.TOTAL_FORMS.html_name }}").attr("value");
-            data["{{formset.management_form.INITIAL_FORMS.html_name}}"] = jQuery("#id_{{ formset.management_form.INITIAL_FORMS.html_name }}").attr("value");
-            var url = "{% url invoicer:edit_invoice invoice.year invoice.number %}";
-
-            //submit the data
-            var val = jQuery.ajax({
-                data: data,
-                url: url,
-                type: "POST",
-                success: function(data, status){
-                    if (data.status == "success") {
-                        if (data.value == "DELETE"){
-                            var initial_forms = jQuery("#id_{{ formset.management_form.INITIAL_FORMS.html_name }}"),
-                                total_forms = jQuery("#id_{{ formset.management_form.TOTAL_FORMS.html_name }}");
-                            td.parent("tr.item-row").remove();
-                            calculate_totals();
-                            initial_forms.attr("value", parseInt(initial_forms.attr("value"))-1);
-                            total_forms.attr("value", parseInt(total_forms.attr("value"))-1);
-                            renumber_rows();
-                        }
-                        td.removeClass("error").text(data.value);
-                    }
-                    else{
-                        td.addClass("error").text(value);
-                        for (key in data.errors){
-                            var element = jQuery("#" + key);
-                            // do something with the error message here.
-                        }
-                    }
-                },
-                error: function(data, status){
-                    console.log("Ajax error!");
-                },
-                dataType: "json"
-            });
-            return indicator;
-        },
-        */
-        calculate_totals = function () {
-            var table = jQuery("#items"),
-                tax_rate = parseFloat(table.find("span.tax_rate").text())/100,
-                subtotal = tax = total = 0;
-            table.find("tr.item-row").each(function () {
-                var row = jQuery(this),
-                    ext = parseFloat(row.find("td.ext_price").text()),
-                    taxable_row = row.find("td.taxable"),
-                    taxable_row_input = taxable_row.find(":input"),
-                    taxable;
-                if (taxable_row_input.length) {
-                    taxable = taxable_row_input.attr("value");
-                }
-                else{
-                    taxable = taxable_row.text();
-                }
-                taxable == "Y" ? tax += ext * tax_rate : tax += 0;
-                subtotal += ext;
-            });
-            total = tax + subtotal;
-            table.find("td.total-value.subtotal").text(subtotal.toFixed(2));
-            table.find("td.total-value.tax").text(tax.toFixed(2));
-            jQuery(".total-value.total").text(total.toFixed(2));
         }
-
-    /*
-    jQuery(".edit:not(.area):not(.taxable)").editable(ajaxEdit, {
-        indicator:indicator,
-        placeholder:''
-    });
-    jQuery(".edit.taxable").editable(ajaxEdit, {
-        type:"select",
-        data:{'Y':'Y', 'N':'N'},
-        onblur:"submit"
-    });
-    jQuery(".edit.area").editable(ajaxEdit, {
-        type:'textarea',
-        rows:3,
-        placeholder:'',
-        submit:'Accept Changes',
-        cancel:'Cancel',
-        data: function(value, settings) {
-            // Convert <br> to newline.
-            var retval = value.replace(/<br[\s\/]?>/gi, '\n');
-            return retval;
-        }
-    });
-    jQuery(".edit.nosave:not(.area)").editable(function(value, settings){return value;}, {placeholder:''});
-    jQuery(".edit.area.nosave").editable(function(value, settings){return value;}, {
-        type:'textarea',
-        rows:3,
-        placeholder:'',
-        submit:'Accept Changes',
-        cancel:'Cancel'
-    });
-    */
-    jQuery("td.recalc").change(function(){
-        var element = jQuery(this),
-            price, quantity, ext_price;
-        if (element.hasClass("price")){
-            price = parseFloat(element.find("input").attr("value")).toFixed(2);
-        }
-        else {
-            price = parseFloat(element.siblings("td.price").text()).toFixed(2);
-        }
-        if (element.hasClass("quantity")){
-            quantity = parseFloat(element.find("input").attr("value")).toFixed(2);
-        }
-        else {
-            quantity = parseFloat(element.siblings("td.quantity").text()).toFixed(2);
-        }
-        ext_price = price * quantity;
-        element.siblings("td.ext_price").text(ext_price.toFixed(2));
-        calculate_totals();
-    });
 
     jQuery("#items tr.item-row").tooltip({
         tip: "#row-tools",
@@ -384,14 +318,20 @@ $(function(){
     jQuery("#id_{{ formset.management_form.TOTAL_FORMS.html_name }}").attr("value", rows.length);
     jQuery("#id_{{ formset.management_form.INITIAL_FORMS.html_name }}").attr("value", rows.length);
 });
+    */
+
 </script>
 {% endblock %}
 
 {% block content %}
     <div id="invoice-wrapper">
         <div id="logo">
+            <ul>
+                <li><a id="testLightFace" href="#">test LightFace</a></li>
+                <li><a id="testLightFaceRequest" href="#">test LightFaceRequest</a></li>
+                <li><a id="testLightFaceRequestCustomized" href="#">test LightFaceRequest customized</a></li>
+            </ul>
             <img alt="{{invoice.company.name}}" src="{{invoice.company.logo.url}}" />
-
         </div>
         <div id="header">
             <table>
