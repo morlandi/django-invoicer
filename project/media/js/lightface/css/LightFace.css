@@ -70,11 +70,11 @@
 
 .lightface .lightfaceContent .lightfaceTitle {
 	font-size: 14px;
-	color: #fff;
+	color: #555;
 	/* background-color: #6d84b4; */
 	/* border: 1px solid #3b5998; */
 	background-color: #F6B542;
-	border: 1px solid #3b5998;
+	border: 1px solid #555555;
 	font-weight: bold;
 	margin: -1px;
 	margin-bottom: 0;
@@ -191,7 +191,7 @@
 
 .lightface .lightfaceFooter label.lightfaceblue input,
 .lightface .lightfaceFooter label.lightfacegreen input {
-	color:#fff;
+	color:#555;
 }
 
 

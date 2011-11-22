@@ -8,7 +8,6 @@
     <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}js/jqueryui/1.7/themes/base/jquery-ui.css" />
     <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/invoice.css" />
     <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}js/lightface/css/LightFace.css" />
-    <!-- <link rel="stylesheet" type="text/css" href="{{ stylesheet.stylesheet.url }}" /> -->
 {% endblock %}
 
 {% block body_class %}invoice{% endblock %}
@@ -136,6 +135,42 @@
         table.getElement('.total-value.total').set('text', (subtotal+tax).toFixed(2));
     },
 
+    AddRowModalBox = new Class({
+        Extends: LightFace,
+        options: {
+            url: ''
+        },
+        initialize: function(options) {
+            this.setOptions(options);
+            props = {
+                width: 550,
+                height: 170,
+                draggable: true,
+                title: "{% trans 'Add row' %}",
+                buttons: [
+                    { title: 'Cancel', event: function() { this.close(); } },
+                    { title: 'Add', color: 'blue', event: function() { var form = this.box.getElement('#add-form'); form.submit(); }}
+                ]
+            };
+            this.parent(props);
+            this.open();
+            this.load(document.id('add-modal').get('html'));
+            var request = new Request.HTML({
+                url: this.options.url,
+                method: 'get',
+                onSuccess: function(tree, elements, html) {
+                    var container = $$('.lightfaceMessageBox .container');
+                    container.set('html', html);
+                    var ctrl = this.box.getElement('#id_name');
+                    console.log(ctrl);
+                    ctrl.setAttribute('tabIndex',0);
+                    ctrl.focus();
+                }.bind(this)
+            });
+            request.send();
+        }
+    }),
+    
     // adapted from http://davidwalsh.name/editable-content-mootools-php-mysql
     window.addEvent('domready', function() {
 
@@ -180,71 +215,39 @@
             });
         });
 
-        /* create LightFace instance */
-        var modal = new LightFace({
-            width: 400,
-            height: 200,
-            draggable: true,
-            title: 'Hello from LightFace!',
-            content: '<p>This is the LightFace content!</p>',
-            buttons: [
-                { title: 'Close', event: function() { this.close(); }, color: 'blue' }
-            ],
-            resetOnScroll: true
-        });
 
-        // open when link is clicked
-        document.id('testLightFace').addEvent('click',function(e){
+        // Add row to invoice
+        document.id('add-row-button').addEvent('click',function(e){
             e.stop();
-            modal.open();
-        });
-
-        document.id('testLightFaceRequest').addEvent('click',function(){
-            
-            ajaxFace = new LightFace.Request({
-                buttons: [
-                    { title: 'Submitter', event: function() { alert('hi!'); }, color: 'blue' },
-                    { title: 'Canceler', event: function() { this.close(); } }
-                ],
-                url: '{% url invoicer:add_line invoice.year invoice.number %}',
-                request: { 
-                    data: { 
-                        name: 'mario'
-                    },
-                    method: 'get'
-                },
-                title: 'AJAX Demo',
-                width: 350,
-                height: 250,
-                draggable: true,
-            }).open();
-            
-        });
-
-        /* create LightFace instance */
-        var modal2 = new LightFace.Request({
-            width: 600,
-            height: 400,
-            draggable: true,
-            title: 'Hello from LightFace!',
-            content: '<p>This is the LightFace content!</p>',
-            buttons: [
-                { title: 'Close', event: function() { this.close(); }, color: 'blue' }
-            ],
-            resetOnScroll: true
-        });
-
-        // open when link is clicked
-        document.id('testLightFaceRequestCustomized').addEvent('click',function(e){
-            e.stop();
-            modal2.open();
-            var form = document.id('add-modal');
-            modal2.load(form.get('html'),'This is the title!');
             var url = '{% url invoicer:add_line invoice.year invoice.number %}';
-            var container = document.id('add-modal').getElement('.container');
-            modal2.loadex(url, 'get', {}, container);
+            var myBox = new AddRowModalBox({ 
+                url: url
+            });
         });
 
+        /*
+        // Delete rows
+        document.id('delete-rows-button').addEvent('click', function(e){
+            e.stop();
+            //var url = '{% url invoicer:invoice invoice.year invoice.number %}';
+            var deleteRowsModalBox = new LightFace({
+                width: 500,
+                height: 150,
+                draggable: true,
+                title: "{% trans 'Delete rows' %}",
+                buttons: [
+                    { title: 'Cancel', event: function() { this.close(); } },
+                    { title: 'OK', color: 'blue', event: function() { 
+                            //this.close();
+                        }, 
+                    },
+                ],
+                resetOnScroll: true
+            });
+            deleteRowsModalBox.open();
+            deleteRowsModalBox.load(document.id('confirm-delete').get('html'));
+        });
+        */
     });
 
 </script>
@@ -324,13 +327,18 @@ $(function(){
 {% endblock %}
 
 {% block content %}
+
+    {% if messages %}
+    <ul class="messagelist">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
     <div id="invoice-wrapper">
         <div id="logo">
-            <ul>
-                <li><a id="testLightFace" href="#">test LightFace</a></li>
-                <li><a id="testLightFaceRequest" href="#">test LightFaceRequest</a></li>
-                <li><a id="testLightFaceRequestCustomized" href="#">test LightFaceRequest customized</a></li>
-            </ul>
+
             <img alt="{{invoice.company.name}}" src="{{invoice.company.logo.url}}" />
         </div>
         <div id="header">
@@ -370,8 +378,10 @@ $(function(){
                     <th class="price">Prezzo unitario</th>
                     <th class="quantity">Quantità</th>
                     <th class="ext_price">Prezzo totale</th>
-                    <th class="taxable blank">{%if not compact%}Taxable{%endif%}</th>
-                    <th class="delete blank"></th>
+                    {%if not compact%}
+                        <th class="taxable blank">Taxable</th>
+                    {%endif%}
+                    <th class="delete blank">&nbsp;</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -383,12 +393,19 @@ $(function(){
                         <td id="{{form.quantity.html_name}}" class="numeric quantity editable recalc">{{ form.initial.quantity }}</td>
                         <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2 }}</td>
                         <td id="{{form.taxable.html_name}}" class="taxable editable recalc {%if compact%}concealed{%endif%}">{{ form.initial.taxable|yesno:"Y,N" }}</td>
-                        <td id="{{form.DELETE.html_name}}" class="delete">
+                        <td id="{{form.DELETE.html_name}}" class="delete blank">
                             <input type="checkbox" name="{{form.DELETE.html_name}}"></input>
                         </td>
                     </tr>
                 {% endfor %}
-                <tr><td colspan="4" class="blank">&nbsp;</td></tr>
+                <tr>
+                    <td colspan="3" class="blank">&nbsp;</td>
+                    <td class="blank"><a href="#" class="link-button" id="add-row-button">{% trans 'Add' %}</a></td>
+                    {%if not compact%}
+                        <td class="blank">&nbsp;</td>
+                    {% endif %}
+                    <td class="blank"><a href="#" class="link-button" id="delete-rows-button">{% trans 'Delete' %}</a></td>
+                </tr>
                 <tr>
                     <td class="blank"> </td>
                     <td colspan="2" class="total-line">Totale imponibile</td>
@@ -421,48 +438,15 @@ $(function(){
         </div>
     <div>
 
-    {% comment %}
-    <form id="payment-status">
-        <fieldset>
-            <legend>Invoice Status</legend>
-            <h3>{{ invoice.get_status_display }}</h3>
-        </fieldset>
-    </form>
-    {% endcomment %}
-
-    {% comment %}
-    <div id="info">
-        {% if invoice.terms.description %}<p class="edit area nosave">{{ invoice.terms.description }}</p>{% endif %}
-        {% if stylesheet.misc_text %}<p class="edit area nosave">{{ stylesheet.misc_text }}</p>{% endif %}
-        {% if stylesheet.feedback_text %}<p class="edit area nosave">{{ stylesheet.feedback_text }}</p>{% endif %}
-        {% if stylesheet.thank_you_text %}<p class="edit area nosave">{{ stylesheet.thank_you_text }}</p>{% endif %}
-    </div>
-    {% endcomment %}
-
     <div id="confirm-delete" class="dialog">
-        <h2>Delete Row</h2>
-        <p>This row will be permanently deleted and cannot be recovered. Are you sure?</p>
-        <p>
-            <button class="close">Cancel</button>
-            <button class="close confirm">Delete</button>
-        </p>
+        <p>{% trans 'Deleted rows will be permanently removed and cannot be recovered. Are you sure?' %}</p>
     </div>
 
     <div id="add-modal" class="dialog">
         <form id="add-form" method="POST" action="{% url invoicer:add_line invoice.year invoice.number %}">
             <input type="hidden" name="invoice" value="{{ invoice.id }}" />
-            <h2>Add Row</h2>
             <table class="container"></table>
-            <p>
-                <button class="close">Cancel</button>
-                <button type="reset">Reset</button>
-                <button type="submit" class="close confirm">Add</button>
-            </p>
         </form>
-    </div>
-
-    <div id="row-tools" class="tooltip">
-        <span><a href="#add" class="add-button">Add</a> | <a href="#delete" class="delete-button">Delete</a></span>
     </div>
 
 {% endblock %}

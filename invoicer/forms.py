@@ -17,11 +17,19 @@ class InvoiceForm(forms.ModelForm):
 class LineItemForm(forms.ModelForm):
     class Meta:
         model = LineItem
+    def __init__(self, *args, **kwargs):
+        super(LineItemForm, self).__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs['cols'] = 50
+        self.fields['name'].widget.attrs['rows'] = 3
 
-class ReducedLineItemForm(forms.ModelForm):
+class ReducedLineItemForm(LineItemForm):
     class Meta:
         model = LineItem
-        exclude = ('taxable', 'description', 'item', )
+        exclude = ('taxable', 'description', )
+    # def __init__(self, *args, **kwargs):
+    #     super(ReducedLineItemForm, self).__init__(*args, **kwargs)
+    #     self.fields['name'].widget.attrs['cols'] = 60
+    #     self.fields['name'].widget.attrs['rows'] = 3
 
 LineItemFormset = inlineformset_factory(
     Invoice, LineItem,

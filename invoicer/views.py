@@ -14,6 +14,8 @@ from invoicer.forms import InvoiceForm, LineItemForm, LineItemFormset, ReducedLi
 from invoicer.models import Client, Company, Invoice, LineItem
 from django.utils.safestring import mark_safe
 from time import sleep
+from django.contrib import messages
+from django.utils.html import strip_tags
 
 @login_required
 def view_invoice(request, year, number):
@@ -34,7 +36,8 @@ def view_invoice(request, year, number):
 @require_POST
 @csrf_exempt
 def edit_invoice(request, year, number):
-
+    if not request.user.is_superuser:
+        raise Exception(unicode(_(u'Not authorized')))
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, year=int(year), number=int(number))
     if request.is_ajax() and request.method == "POST":
@@ -68,35 +71,11 @@ def edit_invoice(request, year, number):
             response = {"status":"error", "errors":errors}
             return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
 
-#        if invoice_form.is_valid():
-#            invoice_form.save()
-#            response = {
-#                "status":"success",
-#                "value":request.POST["value"],
-#                "element_id":request.POST["element_id"]
-#            }
-#            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
-#        elif formset.is_valid():
-#            formset.save()
-#            response = {
-#                "status":"success",
-#                "value":request.POST["value"],
-#                "element_id":request.POST["element_id"]
-#            }
-#            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
-#        else:
-#            errors = {}
-#            for form in formset.forms:
-#                for field in form:
-#                    if field.errors:
-#                        errors[field.html_name] = field.errors.as_text()
-#            response = {"status":"error", "errors":errors}
-#            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
-
 @login_required
 @csrf_exempt
 def add_line(request, year, number):
-    sleep(1)
+    if not request.user.is_superuser:
+        raise Exception(unicode(_(u'Not authorized')))
     formClass = LineItemForm
     invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
     if invoice.company.use_compact_invoice:
@@ -105,6 +84,32 @@ def add_line(request, year, number):
         line = formClass(request.POST, instance=LineItem(invoice=invoice))
         if line.is_valid():
             line.save()
+            messages.info(request, 'New line added')
+        else:
+            for key in line.errors:
+                messages.error(request, '%s: %s' % (key, strip_tags(line.errors[key])))
+        return HttpResponseRedirect(invoice.get_absolute_url())
+    else:
+        form = formClass()
+        return HttpResponse(form.as_table())
+
+@login_required
+@csrf_exempt
+def delete_lines(request, year, number):
+    if not request.user.is_superuser:
+        raise Exception(unicode(_(u'Not authorized')))
+    formClass = LineItemForm
+    invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
+    if invoice.company.use_compact_invoice:
+        formClass = ReducedLineItemForm
+    if request.method == "POST":
+        line = formClass(request.POST, instance=LineItem(invoice=invoice))
+        if line.is_valid():
+            line.save()
+            messages.info(request, 'New line added')
+        else:
+            for key in line.errors:
+                messages.error(request, '%s: %s' % (key, strip_tags(line.errors[key])))
         return HttpResponseRedirect(invoice.get_absolute_url())
     else:
         form = formClass()
