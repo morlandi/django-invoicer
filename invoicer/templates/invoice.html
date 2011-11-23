@@ -135,6 +135,23 @@
         table.getElement('.total-value.total').set('text', (subtotal+tax).toFixed(2));
     },
 
+    collectRowsToDeleteIds = function() {
+        var ids = [];
+        var delete_row_checkboxes = $$("tr.item-row .delete-row input[type=checkbox]");
+        delete_row_checkboxes.each(function(checkbox){
+            if (checkbox.get('checked')) {
+                ids.include(parseInt(checkbox.get('name')));
+            }
+        });
+        return ids;
+    },
+
+    deleteRows = function() {
+        var ids = collectRowsToDeleteIds();
+        console.log(ids);
+        console.log(ids.length);
+    },
+
     AddRowModalBox = new Class({
         Extends: LightFace,
         options: {
@@ -170,7 +187,30 @@
             request.send();
         }
     }),
-    
+
+    ConfirmDeleteRowsModalBox = new Class({
+        Extends: LightFace,
+        options: {
+            url: ''
+        },
+        initialize: function(options) {
+            this.setOptions(options);
+            props = {
+                width: 550,
+                height: 170,
+                draggable: true,
+                title: "{% trans 'Delete rows' %}",
+                buttons: [
+                    { title: 'Cancel', event: function() { this.close(); } },
+                    { title: 'OK', color: 'blue', event: function() { this.close(); deleteRows(); }}
+                ]
+            };
+            this.parent(props);
+            this.open();
+            this.load(document.id('confirm-delete').get('html'));
+        }
+    }),
+
     // adapted from http://davidwalsh.name/editable-content-mootools-php-mysql
     window.addEvent('domready', function() {
 
@@ -215,39 +255,40 @@
             });
         });
 
+        // "Delete row" checboxes
+        $$("tr.item-row .delete-row input[type=checkbox]").each(function(checkbox){
+            checkbox.set('checked',false);
+            checkbox.addEvent('click', function(){
+                var row = this.getParent().getParent();
+                if (checkbox.get('checked')) {
+                    row.addClass('to-be-deleted');
+                }
+                else {
+                    row.removeClass('to-be-deleted');
+                }
+            });
+        });
 
-        // Add row to invoice
+        // "Add row to invoice" tool
         document.id('add-row-button').addEvent('click',function(e){
             e.stop();
             var url = '{% url invoicer:add_line invoice.year invoice.number %}';
-            var myBox = new AddRowModalBox({ 
+            var myBox = new AddRowModalBox({
                 url: url
             });
         });
 
-        /*
-        // Delete rows
-        document.id('delete-rows-button').addEvent('click', function(e){
+        // "Remove rows form invoice" tool
+        document.id('delete-rows-button').addEvent('click',function(e){
             e.stop();
-            //var url = '{% url invoicer:invoice invoice.year invoice.number %}';
-            var deleteRowsModalBox = new LightFace({
-                width: 500,
-                height: 150,
-                draggable: true,
-                title: "{% trans 'Delete rows' %}",
-                buttons: [
-                    { title: 'Cancel', event: function() { this.close(); } },
-                    { title: 'OK', color: 'blue', event: function() { 
-                            //this.close();
-                        }, 
-                    },
-                ],
-                resetOnScroll: true
-            });
-            deleteRowsModalBox.open();
-            deleteRowsModalBox.load(document.id('confirm-delete').get('html'));
+            if ( collectRowsToDeleteIds().length ) {
+                var url = '{% url invoicer:add_line invoice.year invoice.number %}';
+                var myBox = new ConfirmDeleteRowsModalBox({
+                    url: url
+                });
+            }
         });
-        */
+
     });
 
 </script>
@@ -336,9 +377,9 @@ $(function(){
     </ul>
     {% endif %}
 
+    <div id="invoice-container">
     <div id="invoice-wrapper">
         <div id="logo">
-
             <img alt="{{invoice.company.name}}" src="{{invoice.company.logo.url}}" />
         </div>
         <div id="header">
@@ -381,7 +422,7 @@ $(function(){
                     {%if not compact%}
                         <th class="taxable blank">Taxable</th>
                     {%endif%}
-                    <th class="delete blank">&nbsp;</th>
+                    <th class="blank">&nbsp;</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -393,8 +434,8 @@ $(function(){
                         <td id="{{form.quantity.html_name}}" class="numeric quantity editable recalc">{{ form.initial.quantity }}</td>
                         <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2 }}</td>
                         <td id="{{form.taxable.html_name}}" class="taxable editable recalc {%if compact%}concealed{%endif%}">{{ form.initial.taxable|yesno:"Y,N" }}</td>
-                        <td id="{{form.DELETE.html_name}}" class="delete blank">
-                            <input type="checkbox" name="{{form.DELETE.html_name}}"></input>
+                        <td id="{{form.DELETE.html_name}}" class="delete-row blank">
+                            <input type="checkbox" name="{{form.instance.id}}"></input>
                         </td>
                     </tr>
                 {% endfor %}
@@ -436,7 +477,8 @@ $(function(){
         <div id="footer">
             {{ invoice.footer }}
         </div>
-    <div>
+    </div>
+    </div>
 
     <div id="confirm-delete" class="dialog">
         <p>{% trans 'Deleted rows will be permanently removed and cannot be recovered. Are you sure?' %}</p>

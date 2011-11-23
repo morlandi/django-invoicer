@@ -97,7 +97,7 @@ class AbstractItem(models.Model):
     name = models.TextField(blank=True)
     description = models.CharField(max_length=256, blank=True)
     #cost = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
-    price = models.DecimalField(max_digits=7, decimal_places=2)
+    price = models.DecimalField(max_digits=7, decimal_places=2, default=0.0)
     taxable = models.BooleanField(default = True)
 
     class Meta:
