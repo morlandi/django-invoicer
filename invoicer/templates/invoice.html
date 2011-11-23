@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}Invoice {{invoice.number}}/{{invoice.year}}{% endblock %}
+{% block title %}{% trans 'Invoice' %} {{invoice.number}}/{{invoice.year}}{% endblock %}
 
 {% block stylesheet %}
     {{ block.super }}
@@ -176,6 +176,21 @@
         var ids = collectRowsToDeleteIds();
         console.log(ids);
         console.log(ids.length);
+        var data = {};
+        //data['ids'] = JSON.encode(ids);
+        data['line_item_ids'] = ids.toString();
+        var url = "{% url invoicer:delete_lines invoice.year invoice.number %}";
+        var request = new Request({
+            url:url,
+            method:'post',
+            data: data,
+            onSuccess: function(result){
+                window.location.reload(false);
+            }.bind(this),
+            onFailure: function(result){
+                alert('failure:' + result.responseText);
+            }.bind(this)
+        }).send();
     },
 
     AddRowModalBox = new Class({
@@ -281,7 +296,7 @@
             });
         });
 
-        // "Delete row" checboxes
+        // "Delete row" checkboxes
         $$("tr.item-row .delete-row input[type=checkbox]").each(function(checkbox){
             checkbox.set('checked',false);
             checkbox.addEvent('click', function(){
@@ -316,79 +331,6 @@
         });
 
     });
-
-</script>
-
-<script type="text/javascript">
-/*
-$(function(){
-    var indicator = 'Saving...',
-        rows = jQuery("#items tr.item-row"),
-        renumber_rows = function () {
-            var table = jQuery("#items");
-            table.find("tr.item-row").each(function (i){
-                var row = jQuery(this),
-                    bits = row.attr("id").split("-");
-                bits[1] = i;
-                row.attr("id", bits.join("-"));
-                row.find("td").each(function (j){
-                    var td = jQuery(this),
-                        pieces = td.attr("id").split("-");
-                    pieces[1] = i;
-                    td.attr("id", pieces.join("-"));
-                });
-            });
-        }
-
-    jQuery("#items tr.item-row").tooltip({
-        tip: "#row-tools",
-        delay: 750,
-        predelay: 250,
-        position: "top right",
-        effect: "fade",
-        offset: [15, -25],
-        api: true,
-        lazy: true,
-        onBeforeShow: function(pos) {
-            var row = this.getTrigger().closest("tr.item-row");
-            jQuery("#trigger-row-id").attr("value", row.attr("id"));
-        }
-    });
-
-    jQuery("#row-tools a.delete-button").overlay({
-        target: "#confirm-delete",
-        expose: {
-            color: '#333',
-            loadSpeed: 200,
-            opacity: 0.9
-        }
-    });
-
-    jQuery("#row-tools a.add-button").overlay({
-        target: "#add-modal",
-        expose: {
-            color: '#333',
-            loadSpeed: 200,
-            opacity: 0.9
-        },
-        onBeforeLoad: function () {
-            var container = this.getContent().find("table.container");
-            container.load("{% url invoicer:add_line invoice.year invoice.number %}");
-        }
-    });
-
-    jQuery("#confirm-delete button.confirm").click(function () {
-        var id = jQuery("#trigger-row-id").attr("value"),
-            row = jQuery("#" + id),
-            td = row.find("td.delete"),
-            checkbox = row.find("td.delete input:checkbox");
-        checkbox.attr("checked", true);
-        ajaxEdit.apply(td, ["DELETE"]);
-    });
-    jQuery("#id_{{ formset.management_form.TOTAL_FORMS.html_name }}").attr("value", rows.length);
-    jQuery("#id_{{ formset.management_form.INITIAL_FORMS.html_name }}").attr("value", rows.length);
-});
-    */
 
 </script>
 {% endblock %}
@@ -466,8 +408,8 @@ $(function(){
                     </tr>
                 {% endfor %}
                 <tr>
+                    <td class="blank" style="text-align: left"><a href="#" class="link-button" id="add-row-button">{% trans 'Add' %}</a></td>
                     <td colspan="3" class="blank">&nbsp;</td>
-                    <td class="blank"><a href="#" class="link-button" id="add-row-button">{% trans 'Add' %}</a></td>
                     {%if not compact%}
                         <td class="blank">&nbsp;</td>
                     {% endif %}

@@ -10,6 +10,7 @@ from django.db.models import signals
 from invoicer.utils import generate_next_invoice_number
 from invoicer.utils import get_company
 from invoicer.handlers import organize_files_by_pk
+from django.utils.translation import ugettext_lazy as _
 
 __all__ = ['Client', 'Company', 'Terms', 'LineItem', 'InvoiceManager',
             'Invoice', 'Item']

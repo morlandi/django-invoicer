@@ -16,6 +16,7 @@ from django.utils.safestring import mark_safe
 from time import sleep
 from django.contrib import messages
 from django.utils.html import strip_tags
+from django.utils.translation import ugettext_lazy as _
 
 @login_required
 def view_invoice(request, year, number):
@@ -36,7 +37,7 @@ def view_invoice(request, year, number):
 @require_POST
 @csrf_exempt
 def edit_invoice(request, year, number):
-    if not request.user.is_superuser:
+    if not request.user.is_staff:
         raise Exception(unicode(_(u'Not authorized')))
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, year=int(year), number=int(number))
@@ -74,7 +75,7 @@ def edit_invoice(request, year, number):
 @login_required
 @csrf_exempt
 def add_line(request, year, number):
-    if not request.user.is_superuser:
+    if not request.user.is_staff:
         raise Exception(unicode(_(u'Not authorized')))
     formClass = LineItemForm
     invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
@@ -96,24 +97,23 @@ def add_line(request, year, number):
 @login_required
 @csrf_exempt
 def delete_lines(request, year, number):
-    if not request.user.is_superuser:
+    if not request.user.is_staff:
         raise Exception(unicode(_(u'Not authorized')))
-    formClass = LineItemForm
     invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
-    if invoice.company.use_compact_invoice:
-        formClass = ReducedLineItemForm
-    if request.method == "POST":
-        line = formClass(request.POST, instance=LineItem(invoice=invoice))
-        if line.is_valid():
-            line.save()
-            messages.info(request, 'New line added')
-        else:
-            for key in line.errors:
-                messages.error(request, '%s: %s' % (key, strip_tags(line.errors[key])))
-        return HttpResponseRedirect(invoice.get_absolute_url())
+    line_item_ids = [int(item) for item in request.POST['line_item_ids'].split(',')]
+    # make sure all line items pertain to this invoice
+    invoice_line_items = [item.id for item in invoice.line_items.all()]
+    for line_item_id in line_item_ids:
+        if not line_item_id+1000 in invoice_line_items:
+            raise Exception(unicode(_(u'Invalid line item specified')))
+    line_items = LineItem.objects.filter(invoice=invoice,id__in=line_item_ids)
+    n = len(line_items)
+    line_items.delete()
+    if n==1:
+        messages.info(request, _(u'1 line item deleted'))
     else:
-        form = formClass()
-        return HttpResponse(form.as_table())
+        messages.info(request, _(u'%d line items deleted') % n)
+    return HttpResponse('ok')
 
 def paginate_invoices(request, entity, page):
     import pdb; pdb.set_trace() ## PDB_DEBUG ##
