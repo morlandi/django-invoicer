@@ -97,22 +97,25 @@ def add_line(request, year, number):
 @login_required
 @csrf_exempt
 def delete_lines(request, year, number):
-    if not request.user.is_staff:
-        raise Exception(unicode(_(u'Not authorized')))
-    invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
-    line_item_ids = [int(item) for item in request.POST['line_item_ids'].split(',')]
-    # make sure all line items pertain to this invoice
-    invoice_line_items = [item.id for item in invoice.line_items.all()]
-    for line_item_id in line_item_ids:
-        if not line_item_id+1000 in invoice_line_items:
-            raise Exception(unicode(_(u'Invalid line item specified')))
-    line_items = LineItem.objects.filter(invoice=invoice,id__in=line_item_ids)
-    n = len(line_items)
-    line_items.delete()
-    if n==1:
-        messages.info(request, _(u'1 line item deleted'))
-    else:
-        messages.info(request, _(u'%d line items deleted') % n)
+    try:
+        if not request.user.is_staff:
+            raise Exception(unicode(_(u'Not authorized')))
+        invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
+        line_item_ids = [int(item) for item in request.POST['line_item_ids'].split(',')]
+        # make sure all line items pertain to this invoice
+        invoice_line_items = [item.id for item in invoice.line_items.all()]
+        for line_item_id in line_item_ids:
+            if not line_item_id in invoice_line_items:
+                raise Exception(unicode(_(u'Invalid line item specified')))
+        line_items = LineItem.objects.filter(invoice=invoice,id__in=line_item_ids)
+        n = len(line_items)
+        line_items.delete()
+        if n==1:
+            messages.info(request, _(u'1 line item deleted'))
+        else:
+            messages.info(request, _(u'%d line items deleted') % n)
+    except Exception, e:
+        messages.error(request, e.message)
     return HttpResponse('ok')
 
 def paginate_invoices(request, entity, page):

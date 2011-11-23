@@ -56,6 +56,20 @@
 
 <script type="text/javascript">
 
+    displayMessage = function(title, message) {
+        var messageBox = new LightFace({
+            width: 550,
+            height: 170,
+            draggable: true,
+            title: title,
+            content: message,
+            buttons: [
+                { title: "{% trans 'Close' %}", event: function() { this.close(); } }
+            ]
+        });
+        messageBox.open();
+    },
+
     editInvoice = function(element, oldValue, newValue) {
 
         var data = {};
@@ -106,7 +120,8 @@
                 processEditInvoiceResult(result);
             }.bind(this),
             onFailure: function(result){
-                alert('failure:' + result.responseText);
+                //alert('failure:' + result.responseText);
+                displayMessage({% trans 'ERROR' %}, result.responseText);
             }.bind(this)
         }).send();
     },
@@ -125,7 +140,7 @@
             for ( var key in result.errors ) {
                 text += key + ': ' + result.errors[key] + '\n';
             }
-            alert(text);
+            displayMessage({% trans 'ERROR' %}, text);
         }
     },
 
@@ -174,8 +189,6 @@
 
     deleteRows = function() {
         var ids = collectRowsToDeleteIds();
-        console.log(ids);
-        console.log(ids.length);
         var data = {};
         //data['ids'] = JSON.encode(ids);
         data['line_item_ids'] = ids.toString();
@@ -188,7 +201,7 @@
                 window.location.reload(false);
             }.bind(this),
             onFailure: function(result){
-                alert('failure:' + result.responseText);
+                displayMessage("{% trans 'ERROR' %}", result.responseText);
             }.bind(this)
         }).send();
     },
@@ -220,7 +233,6 @@
                     var container = $$('.lightfaceMessageBox .container');
                     container.set('html', html);
                     var ctrl = this.box.getElement('#id_name');
-                    console.log(ctrl);
                     ctrl.setAttribute('tabIndex',0);
                     ctrl.focus();
                 }.bind(this)
