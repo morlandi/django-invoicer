@@ -6,8 +6,34 @@
 {% block stylesheet %}
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}js/jqueryui/1.7/themes/base/jquery-ui.css" />
-    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/invoice.css" />
     <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}js/lightface/css/LightFace.css" />
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/invoice.css" />
+    <style type="text/css" media="print">
+        <!--
+        #invoice-container {
+            border: 0;
+            margin: 0;
+            padding: 0;
+            -moz-box-shadow: none;
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            height: 0;
+        }
+
+        .link-button {
+            display: none;
+        }
+
+        .delete-row input {
+            display: none;
+        }
+
+        .editable {
+            border: 0;
+            margin: 0;
+        }
+        -->
+    </style>
 {% endblock %}
 
 {% block body_class %}invoice{% endblock %}
@@ -422,7 +448,7 @@ $(function(){
                     {%if not compact%}
                         <th class="taxable blank">Taxable</th>
                     {%endif%}
-                    <th class="blank">&nbsp;</th>
+                    <th class="delete blank">&nbsp;</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -445,7 +471,7 @@ $(function(){
                     {%if not compact%}
                         <td class="blank">&nbsp;</td>
                     {% endif %}
-                    <td class="blank"><a href="#" class="link-button" id="delete-rows-button">{% trans 'Delete' %}</a></td>
+                    <td class="blank"><a href="#" class="link-button" id="delete-rows-button">{% trans 'Del' %}</a></td>
                 </tr>
                 <tr>
                     <td class="blank"> </td>
