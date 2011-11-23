@@ -18,6 +18,19 @@ from django.contrib import messages
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 
+
+def dump_post_items(request, prompt):
+    print ''
+    print '---------- ' + prompt + ':'
+    # for key, value in request.POST.items():
+    #     print '%s: "%s"' % (key, value)
+    lines = []
+    for key, value in request.POST.items():
+        lines.append('%s: "%s"' % (key, value))
+    lines.sort()
+    for line in lines:
+        print line
+
 @login_required
 def view_invoice(request, year, number):
 
@@ -45,8 +58,7 @@ def edit_invoice(request, year, number):
     if request.is_ajax() and request.method == "POST":
 
         if settings.DEBUG:
-            for key, value in request.POST.items():
-                print "%s: %s" % (key, value)
+            dump_post_items(request,'edit_invoice')
 
         formset = LineItemFormset(request.POST, instance=invoice)
         #invoice processing and line processing ought to be separate views
@@ -57,7 +69,8 @@ def edit_invoice(request, year, number):
             formset.save()
             response = {
                 "status": "success",
-                "value": mark_safe(request.POST["_value"].replace('\n', '<br />')),
+                #"value": mark_safe(request.POST["_value"].replace('\n', '<br />')),
+                "value": request.POST["_value"],
                 "element_id": request.POST["_element_id"]
             }
             return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
@@ -76,6 +89,10 @@ def edit_invoice(request, year, number):
 @login_required
 @csrf_exempt
 def add_line(request, year, number):
+
+    if settings.DEBUG:
+        dump_post_items(request,'add_line')
+
     if not request.user.is_staff:
         raise Exception(unicode(_(u'Not authorized')))
     formClass = LineItemForm
