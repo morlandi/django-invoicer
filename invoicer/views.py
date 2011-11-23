@@ -20,6 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 
 @login_required
 def view_invoice(request, year, number):
+
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, year=int(year), number=int(number))
     #stylesheet = invoice.company.stylesheets.all()[0]
