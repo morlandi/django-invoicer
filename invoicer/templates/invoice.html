@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n invoicer_tags %}
 
 {% block title %}{% trans 'Invoice' %} {{invoice.number}}/{{invoice.year}}{% endblock %}
 
@@ -26,8 +26,8 @@
         }
 
         .editable {
-            border: 0;
-            margin: 0;
+            border: 0 !important;
+            margin: 0 !important;
         }
         -->
     </style>
@@ -97,6 +97,7 @@
             data[tr.get("id")] = tr.get("name");
             var tds = tr.getChildren("td");
             tds.each(function(td){
+                console.log(td);
                 var id = td.get("id");
                 // convert <br> to newline
                 if (id) data[id] = br2nl(td.get("html"));
@@ -132,7 +133,7 @@
             }.bind(this),
             onFailure: function(result){
                 //alert('failure:' + result.responseText);
-                displayMessage({% trans 'ERROR' %}, result.responseText);
+                displayMessage("{% trans 'ERROR' %}", result.responseText);
             }.bind(this)
         }).send();
     },
@@ -148,12 +149,10 @@
             }
         }
         else {
-            var text = result.status;
-            text += '\n\n';
             for ( var key in result.errors ) {
-                text += key + ': ' + result.errors[key] + '\n';
+                text += key + ': ' + result.errors[key] + '<br />';
             }
-            displayMessage({% trans 'ERROR' %}, text);
+            displayMessage("{% trans 'ERROR' %}", text);
         }
     },
 
@@ -295,13 +294,13 @@
                 if(el.hasClass('textarea'))
                 {
                     // replace <br> with newlines
-                    var input = new Element('textarea', { 'class':'box', 'text':br2nl(before) });
+                    var input = new Element('textarea', { 'class':'editbox', 'html':br2nl(before) });
                     input.store('before', before);
                     input.addEvent('keydown', function(e) { if(e.key == 'esc') { this.store('cancelled', 1); this.fireEvent('blur'); } });
                 }
                 else
                 {
-                    var input = new Element('input', { 'class':'box', 'value':before });
+                    var input = new Element('input', { 'class':'editbox', 'value':before });
                     input.store('before', before);
                     //blur input when they press "Enter"
                     input.addEvent('keydown', function(e) { if (e.key=='esc') this.store('cancelled',1); if(e.key=='enter' || e.key=='esc') { this.fireEvent('blur'); } });
@@ -316,7 +315,7 @@
                     var oldValue = this.retrieve('before','');
                     var newValue = input.get('value');
                     //get value, place it in original element
-                    el.set('text',oldValue).addClass(newValue != '' ? '' : 'editable-empty');
+                    el.set('html',oldValue).addClass(newValue != '' ? '' : 'editable-empty');
                     editInvoice(el, oldValue, newValue);
                 });
             });
@@ -423,9 +422,9 @@
                 {% for form in formset.forms %}
                     <tr id="{{form.id.html_name}}" name="{{form.instance.id}}" class="item-row">
                         <td id="{{form.name.html_name}}" class="item editable textarea">{{form.initial.name|linebreaksbr}}</td>
-                        <td id="{{form.price.html_name}}" class="numeric price editable recalc">{{ form.initial.price|floatformat:2 }}</td>
-                        <td id="{{form.quantity.html_name}}" class="numeric quantity editable recalc">{{ form.initial.quantity }}</td>
-                        <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2 }}</td>
+                        <td id="{{form.price.html_name}}" class="numeric price editable recalc">{{ form.initial.price|floatformat:2|normalize_floatnumber }}</td>
+                        <td id="{{form.quantity.html_name}}" class="numeric quantity editable recalc">{{ form.initial.quantity|floatformat:2|normalize_floatnumber }}</td>
+                        <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2|normalize_floatnumber }}</td>
                         <td id="{{form.taxable.html_name}}" class="taxable editable recalc {%if compact%}concealed{%endif%}">{{ form.initial.taxable|yesno:"Y,N" }}</td>
                         <!-- <td id="{{form.DELETE.html_name}}" class="delete-row blank"> -->
                         <td class="delete-row blank">
@@ -444,19 +443,19 @@
                 <tr>
                     <td class="blank"> </td>
                     <td colspan="2" class="total-line">Totale imponibile</td>
-                    <td class="numeric total-value subtotal">{{ invoice.subtotal|floatformat:2 }}</td>
+                    <td class="numeric total-value subtotal">{{ invoice.subtotal|floatformat:2|normalize_floatnumber }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>
                 <tr>
                     <td class="blank"> </td>
                     <td colspan="2" class="total-line">IVA (<span class="tax_rate">{{ invoice.company.tax_rate }}</span>%)</td>
-                    <td class="numeric total-value tax">{{ invoice.tax|floatformat:2 }}</td>
+                    <td class="numeric total-value tax">{{ invoice.tax|floatformat:2|normalize_floatnumber }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>
                 <tr>
                     <td class="blank"> </td>
                     <td colspan="2" class="total-line bold">TOTALE</td>
-                    <td class="numeric total-value total bold">{{ invoice.total|floatformat:2 }}</td>
+                    <td class="numeric total-value total bold">{{ invoice.total|floatformat:2|normalize_floatnumber }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>
                 </tbody>

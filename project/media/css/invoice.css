@@ -1,4 +1,3 @@
-
 #invoice-container {
     border: 1px solid black;
     margin: 20px;
@@ -11,13 +10,13 @@
 }
 
 .editable {
-    border: 1px solid #fc0;
+    border: 1px solid #fc0 !important;
     margin: -1px;
 }
 
 .editable:hover {
     background-color: #ffc;
-    border: 1px solid #fc0;
+    border: 1px solid red !important;
     margin: -1px;
 }
 
@@ -27,16 +26,17 @@
     border: 1px solid #fc0;
 }
 
-.textarea textarea {
-    height: 60px;
-    padding: 3px;
+.editable>input,
+.editable>textarea {
+    font-family: Arial;
+    font-size: 100%;
+    height: 100%;
+    width: 100%;
+    font-style: italic;
 }
 
-.box {
-    border:1px solid #ccc;
-    padding:5px;
-    display:block;
-    width:95%;
+.editable>textarea {
+    height: 80px;
 }
 
 .invoice {
