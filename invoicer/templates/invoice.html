@@ -99,7 +99,7 @@
         text = text.replace(/<br[\s\/]?>/gi, ''); // remove <br/>s
         return text.replace(/\n/gi, '<br />');
     },
-    
+
     // Normalize field value (from input or textarea) according to server requirements
     adjustFieldValuesForServer = function(element, value) {
         // convert <br> to newline
@@ -419,10 +419,10 @@
                 <tbody>
                 <tr>
                     <td>
-                        <div>{{invoice.location}}, {{invoice.invoice_date|date}}</div>
-                        <div>Fattura n. {{invoice.number}}/{{invoice.year}}</div>
+                        <div>{{invoice.location}}, <span id="invoice_date" class="invoice_field editable">{{invoice.invoice_date|date:date_format}}</span></div>
+                        <div>{% trans 'Invoice #' %} {{invoice.number}}/{{invoice.year}}</div>
                         <br />
-                        <div>Cliente:</div>
+                        <div>{% trans 'Customer' %}:</div>
                         <div>{{invoice.client.name}}</div>
                         {% if invoice.client.vat_id %}
                             <div>{% trans 'VAT ID' %}: {{invoice.client.vat_id}}</div>

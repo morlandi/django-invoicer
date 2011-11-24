@@ -8,11 +8,11 @@ class InvoiceCreationForm(forms.ModelForm):
     class Meta:
         model = Invoice
         fields = ('number', 'client', 'invoice_date',)
-     
+
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = ('left_address', 'right_address', 'terms',)
+        fields = ('invoice_date', 'left_address', 'right_address', 'terms',)
 
 class LineItemForm(forms.ModelForm):
     class Meta:

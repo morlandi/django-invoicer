@@ -17,7 +17,7 @@ urlpatterns = patterns('',
     (r'', include('invoicer.urls', namespace='invoicer', app_name='invoicer')),
 )
 
-if settings.DEBUG:
+if settings.DEVELOPMENT or settings.DEBUG:
     urlpatterns += patterns('',
         (r'^media/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.MEDIA_ROOT}),

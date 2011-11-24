@@ -1,5 +1,6 @@
 
 from project.settings import *
+DEVELOPMENT=True
 DEBUG=True
 TEMPLATE_DEBUG=DEBUG
 

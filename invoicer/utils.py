@@ -7,7 +7,7 @@ def get_company():
     if len(companies) != 1:
         raise Exception('Please configure one single company')
     return companies[0]
-     
+
 def generate_next_invoice_number( obj ):
     """    Generate a suitable invoice number for given object;
            Strategy: find out current max value for the year, then add 1
@@ -18,3 +18,13 @@ def generate_next_invoice_number( obj ):
         max = 0
     return (max + 1)
 
+def i18n_date_format(request):
+    try:
+        lang_code = getattr(request, 'LANGUAGE_CODE')
+    except:
+        raise Exception('Did you forget LocaleMiddleware ?')
+    if lang_code == 'en' or lang_code.startswith('en_'):
+        date_format = 'm/d/Y'
+    else:
+        date_format = 'd/m/Y'
+    return date_format

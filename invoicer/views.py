@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from invoicer.forms import InvoiceForm, LineItemForm, LineItemFormset, ReducedLineItemForm
 from invoicer.models import Client, Company, Invoice, LineItem
+from invoicer.utils import i18n_date_format
 from django.utils.safestring import mark_safe
 from time import sleep
 from django.contrib import messages
@@ -39,15 +40,15 @@ def view_invoice(request, year, number):
 
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, year=int(year), number=int(number))
-    #stylesheet = invoice.company.stylesheets.all()[0]
     formset = LineItemFormset(instance=invoice)
     context = {
-        'invoice':invoice,
-        #"stylesheet":stylesheet,
-        "invoice_form":InvoiceForm(),
-        "formset":formset,
+        'invoice': invoice,
+        "invoice_form": InvoiceForm(),
+        "formset": formset,
+        "date_format": i18n_date_format(request),
         "compact": invoice.company.use_compact_invoice,
     }
+    messages.warning(request, i18n_date_format(request))
     return render_to_response('invoice.html', context, context_instance=RequestContext(request))
 
 @login_required
@@ -58,27 +59,30 @@ def edit_invoice(request, year, number):
         raise Exception(unicode(_(u'Not authorized')))
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, year=int(year), number=int(number))
+    original_invoice_year = invoice.invoice_date.year
     if request.is_ajax() and request.method == "POST":
 
         dump_post_items(request,'edit_invoice')
 
+        form = InvoiceForm(request.POST, instance=invoice)
         formset = LineItemFormset(request.POST, instance=invoice)
-        #invoice processing and line processing ought to be separate views
-        invoice_form = InvoiceForm(request.POST, instance=invoice)
 
-        if invoice_form.is_valid() and formset.is_valid():
-            invoice_form.save()
+        if form.is_valid() and formset.is_valid():
+            # Check date: change of year is not allowed
+            if form.cleaned_data['invoice_date'].year != original_invoice_year:
+                raise Exception('Cannot modify invoice year')
+
+            form.save()
             formset.save()
             response = {
                 "status": "success",
-                #"value": mark_safe(request.POST["_value"].replace('\n', '<br />')),
                 "value": request.POST["_value"],
                 "element_id": request.POST["_element_id"]
             }
             return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
         else:
             errors = {}
-            for field in invoice_form:
+            for field in form:
                 if field.errors:
                     errors[field.html_name] = field.errors.as_text()
             for form in formset.forms:
