@@ -53,6 +53,7 @@
 
 <script type="text/javascript">
 
+    // Show a simple message box with required message
     displayMessage = function(title, message) {
         var messageBox = new LightFace({
             width: 550,
@@ -67,18 +68,50 @@
         messageBox.open();
     },
 
+    number_format = function(value, numDecimals) {
+        if (!$defined(numDecimals)) numDecimals = 2;
+        text = value.toFixed(numDecimals);
+        // now add thousands separators
+        x = text.split('.');
+        x1 = x[0];
+        x2 = x.length > 1 ? '.' + x[1] : '';
+        var rgx = /(\d+)(\d{3})/;
+        while (rgx.test(x1)) {
+            x1 = x1.replace(rgx, '$1' + ',' + '$2');
+        }
+        return x1 + x2;
+    },
+
+    number_parse = function(text) {
+        // remove thousand separators
+        text = text.replace(/,/gi, '');
+        return parseFloat(text);
+    },
+
+    // Replace <br> with newlines
     br2nl = function(text) {
-        //console.log('-----> br2nl"' + text + '"');
         text = text.replace(/\n/gi, ''); // remove newlines
         return text.replace(/<br[\s\/]?>/gi, '\n');
     },
 
+    // Replace newlines with <br>s
     nl2br = function(text) {
-        //console.log('-----> nl2br"' + text + '"');
         text = text.replace(/<br[\s\/]?>/gi, ''); // remove <br/>s
         return text.replace(/\n/gi, '<br />');
-    }
+    },
     
+    // Normalize field value (from input or textarea) according to server requirements
+    adjustFieldValuesForServer = function(element, value) {
+        // convert <br> to newline
+        value = br2nl(value);
+        if ( element.hasClass('numeric') ) {
+            // remove commas used as thousand separators
+            value = value.replace(/,/gi, '');
+        }
+        return value;
+    },
+
+    // Sumbimt invoice values to server for editing
     editInvoice = function(element, oldValue, newValue) {
 
         var data = {};
@@ -88,7 +121,7 @@
         invoice_fields.each(function(field){
             var id = field.get("id");
             // convert <br> to newline
-            if (id) data[id] = br2nl(field.get("html"));
+            if (id) data[id] = adjustFieldValuesForServer(field, field.get("html"));
         });
 
         // gather the data for each item row
@@ -97,10 +130,9 @@
             data[tr.get("id")] = tr.get("name");
             var tds = tr.getChildren("td");
             tds.each(function(td){
-                console.log(td);
                 var id = td.get("id");
                 // convert <br> to newline
-                if (id) data[id] = br2nl(td.get("html"));
+                if (id) data[id] = adjustFieldValuesForServer(td, td.get("html"));
             });
         });
 
@@ -113,7 +145,7 @@
 
         //send along the id and value so we know what was edited
         data["_element_id"] = element.get("id");
-        data["_value"] = newValue;
+        data["_value"] = adjustFieldValuesForServer(element, newValue);
 
         //correct for false == empty logic in django form processing
         for (key in data) {
@@ -138,6 +170,7 @@
         }).send();
     },
 
+    // Process result after successfull Ajax invoice update
     processEditInvoiceResult = function(result) {
         if ( result.status=='success') {
             var element = document.id(result.element_id);
@@ -156,26 +189,28 @@
         }
     },
 
+    // Update invoice row on client
     recalcRow = function(element) {
         var parent = element.getParent();
-        var price = parseFloat(parent.getChildren('.price').get('text'));
-        var quantity = parseFloat(parent.getChildren('.quantity').get('text'));
+        var price = number_parse(parent.getElement('.price').get('text'));
+        var quantity = number_parse(parent.getElement('.quantity').get('text'));
         var ext_price = price * quantity;
-        parent.getChildren(".price").set('text', price.toFixed(2));
-        parent.getChildren(".quantity").set('text', quantity.toFixed(2));
-        parent.getChildren(".ext_price").set('text', ext_price.toFixed(2));
+        parent.getChildren(".price").set('text', number_format(price));
+        parent.getChildren(".quantity").set('text', number_format(quantity));
+        parent.getChildren(".ext_price").set('text', number_format(ext_price));
         calculateTotals();
     },
 
+    // Update invoice totals on client
     calculateTotals = function() {
         var table = document.id('items');
-        var tax_rate = parseFloat(table.getElement('span.tax_rate').get('text')) / 100.0;
+        var tax_rate = number_parse(table.getElement('span.tax_rate').get('text')) / 100.0;
         var subtotal = 0.0;
         var tax = 0.0;
 
         var trs = table.getElements("tr.item-row");
         trs.each(function(row) {
-            var ext = parseFloat(row.getElement('.ext_price').get('text'));
+            var ext = number_parse(row.getElement('.ext_price').get('text'));
             var taxable = row.getElement('.taxable').get('text');
             if ( taxable == "Y" ) {
                 tax += ext * tax_rate;
@@ -183,11 +218,12 @@
             subtotal += ext;
         });
 
-        table.getElement('.total-value.subtotal').set('text', subtotal.toFixed(2));
-        table.getElement('.total-value.tax').set('text', tax.toFixed(2));
-        table.getElement('.total-value.total').set('text', (subtotal+tax).toFixed(2));
+        table.getElement('.total-value.subtotal').set('text', number_format(subtotal));
+        table.getElement('.total-value.tax').set('text', number_format(tax));
+        table.getElement('.total-value.total').set('text', number_format(subtotal+tax));
     },
 
+    // Collect ids of rows to be deleted
     collectRowsToDeleteIds = function() {
         var ids = [];
         var delete_row_checkboxes = $$("tr.item-row .delete-row input[type=checkbox]");
@@ -199,6 +235,7 @@
         return ids;
     },
 
+    // Ask to server to delete rows, then reload page
     deleteRows = function() {
         var ids = collectRowsToDeleteIds();
         var data = {};
@@ -218,6 +255,7 @@
         }).send();
     },
 
+    // Modal box for new row editing
     AddRowModalBox = new Class({
         Extends: LightFace,
         options: {
@@ -253,6 +291,7 @@
         }
     }),
 
+    // Message box to confirm rows deletion
     ConfirmDeleteRowsModalBox = new Class({
         Extends: LightFace,
         options: {
@@ -276,10 +315,10 @@
         }
     }),
 
-    // adapted from http://davidwalsh.name/editable-content-mootools-php-mysql
     window.addEvent('domready', function() {
 
-        //find the editable areas
+        // Find and setup the editable areas;
+        // adapted from http://davidwalsh.name/editable-content-mootools-php-mysql
         $$('.editable').each(function(el) {
             if ( el.get('text')=='' ) {
                 el.addClass('editable-empty');
@@ -422,9 +461,9 @@
                 {% for form in formset.forms %}
                     <tr id="{{form.id.html_name}}" name="{{form.instance.id}}" class="item-row">
                         <td id="{{form.name.html_name}}" class="item editable textarea">{{form.initial.name|linebreaksbr}}</td>
-                        <td id="{{form.price.html_name}}" class="numeric price editable recalc">{{ form.initial.price|floatformat:2|normalize_floatnumber }}</td>
-                        <td id="{{form.quantity.html_name}}" class="numeric quantity editable recalc">{{ form.initial.quantity|floatformat:2|normalize_floatnumber }}</td>
-                        <td class="numeric ext_price">{{ form.instance.ext_price|floatformat:2|normalize_floatnumber }}</td>
+                        <td id="{{form.price.html_name}}" class="numeric price editable recalc">{{ form.initial.price|floatformatex:2 }}</td>
+                        <td id="{{form.quantity.html_name}}" class="numeric quantity editable recalc">{{ form.initial.quantity|floatformatex:2 }}</td>
+                        <td class="numeric ext_price">{{ form.instance.ext_price|floatformatex:2 }}</td>
                         <td id="{{form.taxable.html_name}}" class="taxable editable recalc {%if compact%}concealed{%endif%}">{{ form.initial.taxable|yesno:"Y,N" }}</td>
                         <!-- <td id="{{form.DELETE.html_name}}" class="delete-row blank"> -->
                         <td class="delete-row blank">
@@ -443,19 +482,19 @@
                 <tr>
                     <td class="blank"> </td>
                     <td colspan="2" class="total-line">Totale imponibile</td>
-                    <td class="numeric total-value subtotal">{{ invoice.subtotal|floatformat:2|normalize_floatnumber }}</td>
+                    <td class="numeric total-value subtotal">{{ invoice.subtotal|floatformatex:2 }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>
                 <tr>
                     <td class="blank"> </td>
                     <td colspan="2" class="total-line">IVA (<span class="tax_rate">{{ invoice.company.tax_rate }}</span>%)</td>
-                    <td class="numeric total-value tax">{{ invoice.tax|floatformat:2|normalize_floatnumber }}</td>
+                    <td class="numeric total-value tax">{{ invoice.tax|floatformatex:2 }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>
                 <tr>
                     <td class="blank"> </td>
                     <td colspan="2" class="total-line bold">TOTALE</td>
-                    <td class="numeric total-value total bold">{{ invoice.total|floatformat:2|normalize_floatnumber }}</td>
+                    <td class="numeric total-value total bold">{{ invoice.total|floatformatex:2 }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>
                 </tbody>
