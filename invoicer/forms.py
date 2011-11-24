@@ -12,7 +12,7 @@ class InvoiceCreationForm(forms.ModelForm):
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = ('left_address', 'right_address',)
+        fields = ('left_address', 'right_address', 'terms',)
 
 class LineItemForm(forms.ModelForm):
     class Meta:

@@ -86,7 +86,7 @@ signals.post_save.connect(organize_files_by_pk, sender=Company)
 
 class Terms(models.Model):
     name = models.CharField(max_length=128)
-    description = models.TextField(max_length=256)
+    description = models.TextField(max_length=512)
 
     class Meta:
         verbose_name_plural = "Terms"
@@ -160,7 +160,8 @@ class Invoice(models.Model):
     due_date = models.DateField(default=date.today)
     status = models.CharField(max_length=10, default="unsent", choices=STATUS_CHOICES)
     status_notes = models.CharField(max_length=128, blank=True)
-    terms = models.ForeignKey(Terms, null=True, blank=True)
+    #terms = models.ForeignKey(Terms, null=True, blank=True)
+    terms = models.TextField(max_length=512, blank=True)
     tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
     footer = models.TextField(blank=True)
 

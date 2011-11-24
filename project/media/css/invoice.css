@@ -11,7 +11,7 @@
 }
 
 .editable {
-    border: 1px dashed #fc0;
+    border: 1px solid #fc0;
     margin: -1px;
 }
 
@@ -24,7 +24,7 @@
 .editable-empty {
     padding: 9px 0;
     margin: -1px;
-    border: 1px dashed #fc0;
+    border: 1px solid #fc0;
 }
 
 .textarea textarea {

@@ -4,6 +4,7 @@ from invoicer.models import *
 from invoicer.forms import InvoiceCreationForm
 from invoicer.utils import generate_next_invoice_number
 from invoicer.utils import get_company
+from django.utils.translation import ugettext_lazy as _
 
 class LineItemInline(admin.TabularInline):
     model = LineItem
@@ -49,10 +50,9 @@ class TermsAdmin(admin.ModelAdmin):
     model = Terms
 
 class InvoiceAdmin(admin.ModelAdmin):
-    add_form_template = 'admin/invoicer/invoice/add_form.html'
     add_form = InvoiceCreationForm
     model = Invoice
-    list_display = ("__unicode__", "number", "year", "client", "company", "invoice_date", "due_date", "status",)
+    list_display = ("__unicode__", 'view_on_site', "number", "year", "client", "company", "invoice_date", "due_date", "status",)
     list_filter = ("year", "client", "invoice_date", "due_date", "status",)
     list_editable = ("status",)
     search_fields = ("number", )
@@ -66,7 +66,14 @@ class InvoiceAdmin(admin.ModelAdmin):
         (None, {"fields": ('number', 'client', 'invoice_date', )}),
     )
     inlines = (LineItemInline,)
-    
+   
+    def view_on_site(self, obj):
+        url = obj.get_absolute_url()
+        description = unicode(_(u'Edit'))
+        return '<a href="%s">%s</a>' % (url, description)
+    view_on_site.allow_tags = True
+    view_on_site.short_description = _(u'View on site')
+
     def get_fieldsets(self, request, obj=None):
        if not obj:
            return self.add_fieldsets

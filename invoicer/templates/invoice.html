@@ -462,14 +462,9 @@
                 </tbody>
             </table>
         </div>
-        <div id="terms">
-            <br />
-            <div>terms</div>
-            <div>terms</div>
-            <div>terms</div>
-        </div>
+        <div id="terms" class="invoice_field editable textarea">{{invoice.terms|linebreaksbr}}</div>
         <div id="footer">
-            {{ invoice.footer }}
+            {{ invoice.footer|linebreaksbr }}
         </div>
     </div>
     </div>
