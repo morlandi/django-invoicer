@@ -67,6 +67,18 @@
         messageBox.open();
     },
 
+    br2nl = function(text) {
+        //console.log('-----> br2nl"' + text + '"');
+        text = text.replace(/\n/gi, ''); // remove newlines
+        return text.replace(/<br[\s\/]?>/gi, '\n');
+    },
+
+    nl2br = function(text) {
+        //console.log('-----> nl2br"' + text + '"');
+        text = text.replace(/<br[\s\/]?>/gi, ''); // remove <br/>s
+        return text.replace(/\n/gi, '<br />');
+    }
+    
     editInvoice = function(element, oldValue, newValue) {
 
         var data = {};
@@ -76,7 +88,7 @@
         invoice_fields.each(function(field){
             var id = field.get("id");
             // convert <br> to newline
-            if (id) data[id] = field.get("html").replace(/<br[\s\/]?>/gi, '\n');
+            if (id) data[id] = br2nl(field.get("html"));
         });
 
         // gather the data for each item row
@@ -86,7 +98,8 @@
             var tds = tr.getChildren("td");
             tds.each(function(td){
                 var id = td.get("id");
-                if (id) data[id] = td.get("html").replace(/<br[\s\/]?>/gi, '\n');
+                // convert <br> to newline
+                if (id) data[id] = br2nl(td.get("html"));
             });
         });
 
@@ -124,16 +137,11 @@
         }).send();
     },
 
-    /*
-        // convert <br> to newline
-        var text = result.value.replace(/<br[\s\/]?>/gi, '\n');
-    */
-
     processEditInvoiceResult = function(result) {
         if ( result.status=='success') {
             var element = document.id(result.element_id);
             // convert newline to <br>
-            var text = result.value.replace(/\n/gi, '<br />');
+            var text = nl2br(result.value);
             element.set('html', text);
             if ( element.hasClass('recalc') ) {
                 recalcRow(element);
@@ -280,13 +288,14 @@
             //add double-click and blur events
             el.addEvent('dblclick',function() {
                 //store "before" message
-                var before = el.get('html').trim();
+                var before = el.get('html');
                 //erase current
                 el.set('html','');
                 //replace current text/content with input or textarea element
                 if(el.hasClass('textarea'))
                 {
-                    var input = new Element('textarea', { 'class':'box', 'text':before });
+                    // replace <br> with newlines
+                    var input = new Element('textarea', { 'class':'box', 'text':br2nl(before) });
                     input.store('before', before);
                     input.addEvent('keydown', function(e) { if(e.key == 'esc') { this.store('cancelled', 1); this.fireEvent('blur'); } });
                 }
@@ -301,11 +310,11 @@
                 //add blur event to input
                 input.addEvent('blur', function() {
                     if ( this.retrieve('cancelled',0) ) {
-                        el.set('text', this.retrieve('before', ''));
+                        el.set('html', this.retrieve('before', ''));
                         return;
                     }
                     var oldValue = this.retrieve('before','');
-                    var newValue = input.get('value').trim();
+                    var newValue = input.get('value');
                     //get value, place it in original element
                     el.set('text',oldValue).addClass(newValue != '' ? '' : 'editable-empty');
                     editInvoice(el, oldValue, newValue);
