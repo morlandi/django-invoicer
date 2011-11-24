@@ -1,5 +1,6 @@
 from django.template.base import Library
 from django.template.defaultfilters import stringfilter
+from django.template.defaultfilters import date
 from django.template.defaultfilters import floatformat
 from django.utils.encoding import force_unicode
 import re
@@ -29,3 +30,18 @@ def floatformatex(text, arg=-1):
     return text
 floatformatex.is_safe = True
 floatformatex = stringfilter(floatformatex)
+
+@register.filter
+def i18n_date_format(value,request):
+    lang_code = getattr(request, 'LANGUAGE_CODE', 'en')
+    if lang_code == 'en' or lang_code.startswith('en_'):
+        compact_date_format = 'm/d/Y'
+        date_format = '%m/%d/%Y'
+        week_starts_on_monday = False
+    else:
+        compact_date_format = 'd/m/Y'
+        date_format = '%d/%m/%Y'
+        week_starts_on_monday = True
+    return date(value, date_format)
+i18n_date_format.is_safe = True
+i18n_date_format = stringfilter(floatformatex)

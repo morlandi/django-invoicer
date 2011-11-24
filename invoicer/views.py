@@ -17,6 +17,8 @@ from time import sleep
 from django.contrib import messages
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
+from django.template.context import RequestContext
+from django.shortcuts import render_to_response
 
 
 def dump_post_items(request, prompt):
@@ -46,7 +48,7 @@ def view_invoice(request, year, number):
         "formset":formset,
         "compact": invoice.company.use_compact_invoice,
     }
-    return render(request, 'invoice.html', context)
+    return render_to_response('invoice.html', context, context_instance=RequestContext(request))
 
 @login_required
 @require_POST
