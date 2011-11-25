@@ -1,18 +1,95 @@
+body {
+    line-height: 1.4em;
+}
+
+table {
+    border-collapse: separate; 
+    border-spacing: 2px;
+}
 
 #invoice-container {
     border: 1px solid black;
-    margin: 20px;
+    margin: 20px auto;
     padding: 20px;
     padding-top: 80px;
     -moz-box-shadow: 5px 5px 5px #999;
     -webkit-box-shadow: 5px 5px 5px #999;
     box-shadow: 5px 5px 5px #999;
     height: 1300px;
+    width: 950px;
+}
+
+#invoice-wrapper {
+    height: 800px;
+    width: 800px;
+    margin: 0 auto;
+}
+
+#invoice-wrapper #logo   { height: 100px; }
+#invoice-wrapper #header { height: 220px; }
+#invoice-wrapper #body   { height: 700px; }
+#invoice-wrapper #terms  { height: 100px; }
+
+#invoice-wrapper>div {
+    vertical-align: top;
+}
+
+#invoice-wrapper #logo img {
+    float: right;
+}
+
+#invoice-wrapper #header table {
+    width: 100%;
+}
+#invoice-wrapper #header td {
+    width: 33%;
+}
+
+#invoice-wrapper #footer {
+    border-top: 1px solid #aaa;
+    text-align: center;
+}
+
+.invoice .item-row.to-be-deleted {
+    color: #ccc;
+}
+
+.invoice #items th {
+    font-weight: normal;
+}
+
+.invoice #items th,
+.invoice #items td {
+    border: 1px solid #ddd;
+    vertical-align: bottom;
+}
+
+.invoice #items td.name { width: 60%; }
+.invoice #items td.price { width: 10%; }
+.invoice #items td.quantity { width: 12%; }
+.invoice #items td.ext_price { width: 15%; }
+.invoice #items td.delete { width: 3%; }
+.invoice #items td.position { width: 0%; display: none;}
+
+.invoice #items td.concealed {
+    display: none;
+}
+
+.invoice #items td.delete {
+}
+
+.invoice #items th.blank,
+.invoice #items td.blank {
+    border: none;
+    text-align: right;
+}
+
+.link-button {
+    color: red;
+    font-size: 0.8em;
 }
 
 .editable {
-    border: 1px solid #fc0 !important;
-    margin: -1px;
 }
 
 .editable:hover {
@@ -65,80 +142,6 @@
 .bold {
     font-weight: bold;
     border: 1px solid #666 !important;
-}
-#invoice-wrapper {
-    height: 800px;
-    width: 800px;
-    margin: 0 auto;
-}
-
-#invoice-wrapper>div {
-    /* border: 1px solid #fdd; */
-    vertical-align: top;
-}
-#invoice-wrapper #logo {
-    height: 100px;
-}
-#invoice-wrapper #logo img {
-    float: right;
-}
-#invoice-wrapper #header {
-    height: 220px;
-}
-#invoice-wrapper #header table {
-    width: 100%;
-}
-#invoice-wrapper #header td {
-    width: 33%;
-}
-#invoice-wrapper #terms {
-    height: 100px;
-}
-#invoice-wrapper #body {
-    height: 700px;
-}
-#invoice-wrapper #footer {
-    border-top: 1px solid #aaa;
-    text-align: center;
-}
-
-.invoice .item-row.to-be-deleted {
-    color: #ccc;
-}
-
-.invoice #items th {
-    font-weight: normal;
-}
-
-.invoice #items th,
-.invoice #items td {
-    border: 1px solid #ddd;
-    vertical-align: bottom;
-}
-
-.invoice #items td.name { width: 60%; }
-.invoice #items td.price { width: 10%; }
-.invoice #items td.quantity { width: 12%; }
-.invoice #items td.ext_price { width: 15%; }
-.invoice #items td.delete { width: 3%; }
-.invoice #items td.position { width: 0%; display: none;}
-
-.invoice #items td.concealed {
-    display: none;
-}
-
-.invoice #items td.delete {
-}
-
-.invoice #items th.blank,
-.invoice #items td.blank {
-    border: none;
-    text-align: right;
-}
-
-.link-button {
-    color: red;
-    font-size: 0.8em;
 }
 
 /* MESSAGES & ERRORS adapted from "/static/admin/css/base.css" */
