@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block body-class %}{% endblock %}
+{% block title %}{{ block.super }} - {% trans "Server error" %}{% endblock %}
+
+{% block content %}
+    <h1>{% trans "Server error" %}</h1>
+
+    <p>{% trans "An error occurred while processing your request, please try again or contact our technical support at " %} <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a>.</p>
+
+    <p>
+        <a href="/">{% trans "Click here to open the homepage." %}</a>
+    </p>
+
+{% endblock content %}

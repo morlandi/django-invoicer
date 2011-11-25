@@ -60,6 +60,8 @@ def edit_invoice(request, year, number):
     invoices = Invoice.objects.select_related()
     invoice = get_object_or_404(invoices, year=int(year), number=int(number))
     original_invoice_year = invoice.invoice_date.year
+    errors = {}
+
     if request.is_ajax() and request.method == "POST":
 
         dump_post_items(request,'edit_invoice')
@@ -70,18 +72,17 @@ def edit_invoice(request, year, number):
         if form.is_valid() and formset.is_valid():
             # Check date: change of year is not allowed
             if form.cleaned_data['invoice_date'].year != original_invoice_year:
-                raise Exception('Cannot modify invoice year')
-
-            form.save()
-            formset.save()
-            response = {
-                "status": "success",
-                "value": request.POST["_value"],
-                "element_id": request.POST["_element_id"]
-            }
-            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
+                errors[''] = unicode(_(u'Cannot modify invoice year'))
+            else:
+                form.save()
+                formset.save()
+                response = {
+                    "status": "success",
+                    "value": request.POST["_value"],
+                    "element_id": request.POST["_element_id"]
+                }
+                return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
         else:
-            errors = {}
             for field in form:
                 if field.errors:
                     errors[field.html_name] = field.errors.as_text()
@@ -89,8 +90,9 @@ def edit_invoice(request, year, number):
                 for field in form:
                     if field.errors:
                         errors[field.html_name] = field.errors.as_text()
-            response = {"status":"error", "errors":errors}
-            return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
+
+    response = {"status":"error", "errors":errors}
+    return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
 
 @login_required
 @csrf_exempt
