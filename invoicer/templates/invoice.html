@@ -166,6 +166,7 @@
 
         //send along the id and value so we know what was edited
         data["_element_id"] = element.get("id");
+        data["_element_class"] = element.get('class');
         data["_value"] = newValue;
 
         //correct for false == empty logic in django form processing

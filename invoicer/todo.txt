@@ -1,0 +1,11 @@
+invoicer todo list
+------------------
+
+- nascondere la scritta "date due" quando la data corrispondente non viene valorizzata
+- localizzazione di tutti i termini che vengono visualizzati nella fattura
+- editing invoice item: dal server normalizzare il nuovo valore se assegnato
+  a un campo data
+- eventualmente elencare solo l'italiano fra le lingue disponibili 
+- impostazione della lingua
+- oppure associare la lingua alla singola fattura
+- eventualmente associare il formato della data alla Company
