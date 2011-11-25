@@ -134,7 +134,7 @@ class Invoice(models.Model):
     invoice_date = models.DateField(default=date.today)
     year = models.IntegerField()
     number = models.IntegerField(blank=True, help_text='leave empty for automatic assignment')
-    due_date = models.DateField(default=date.today)
+    due_date = models.DateField(default=date.today, null=True, blank=True)
     status = models.CharField(max_length=10, default="unsent", choices=STATUS_CHOICES)
     status_notes = models.CharField(max_length=128, blank=True)
     #terms = models.ForeignKey(Terms, null=True, blank=True)

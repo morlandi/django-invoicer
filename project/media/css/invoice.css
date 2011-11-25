@@ -25,10 +25,11 @@ table {
     margin: 0 auto;
 }
 
-#invoice-wrapper #logo   { height: 100px; }
-#invoice-wrapper #header { height: 220px; }
-#invoice-wrapper #body   { height: 700px; }
-#invoice-wrapper #terms  { height: 100px; }
+#invoice-wrapper #logo      { height: 100px; }
+#invoice-wrapper #header    { height: 220px; }
+#invoice-wrapper #body      { height: 700px; }
+#invoice-wrapper #bottom    { height: 30px; }
+#invoice-wrapper #terms     { height: 100px; }
 
 #invoice-wrapper>div {
     vertical-align: top;
@@ -38,11 +39,12 @@ table {
     float: right;
 }
 
-#invoice-wrapper #header table {
-    width: 100%;
-}
-#invoice-wrapper #header td {
-    width: 33%;
+#invoice-wrapper #header table { width: 100%; }
+#invoice-wrapper #header td { width: 33%; }
+
+#invoice-wrapper .date {
+    width: 80px;
+    height: 16px;
 }
 
 #invoice-wrapper #footer {
@@ -89,19 +91,9 @@ table {
     font-size: 0.8em;
 }
 
-.editable {
-}
-
 .editable:hover {
-    background-color: #ffc;
-    border: 1px solid red !important;
+    border: 1px solid #F3A300 !important;
     margin: -1px;
-}
-
-.editable-empty {
-    padding: 9px 0;
-    margin: -1px;
-    border: 1px solid #fc0;
 }
 
 .editable>input,

@@ -28,15 +28,20 @@
     </style>
     <style type="text/css" media="screen">
         <!--
+        /*
         #invoice-wrapper>div {
             border: 3px solid #fdd;
             margin: -3px;
         }
-
+        */
         .editable {
-            border: 1px solid #fc0 !important;
-            margin: -1px;
+            background-color: #ffc;
         }
+
+        .editable-empty {
+            padding: 9px 0;
+        }
+
         -->
     </style>
 {% endblock %}
@@ -115,6 +120,7 @@
         if ( element.hasClass('numeric') ) {
             // remove commas used as thousand separators
             value = value.replace(/,/gi, '');
+            console.log(value);
         }
         return value;
     },
@@ -138,6 +144,7 @@
             data[tr.get("id")] = tr.get("name");
             var tds = tr.getChildren("td");
             tds.each(function(td){
+                console.log(td);
                 var id = td.get("id");
                 // convert <br> to newline
                 if (id) data[id] = adjustFieldValuesForServer(td, td.get("html"));
@@ -148,15 +155,17 @@
         data["{{formset.management_form.TOTAL_FORMS.html_name}}"] = document.id("id_{{ formset.management_form.TOTAL_FORMS.html_name }}").get("value");
         data["{{formset.management_form.INITIAL_FORMS.html_name}}"] = document.id("id_{{ formset.management_form.INITIAL_FORMS.html_name }}").get("value");
 
+        // eventually adjust newValue
+        if ( element.hasClass('numeric') ) {
+            // remove commas used as thousand separators
+            newValue = newValue.replace(/,/gi, '');
+        }
+
         // update value for selected element
         data[element.get("id")] = newValue;
 
         //send along the id and value so we know what was edited
         data["_element_id"] = element.get("id");
-        if ( element.hasClass('numeric') ) {
-            // remove commas used as thousand separators
-            newValue = newValue.replace(/,/gi, '');
-        }
         data["_value"] = newValue;
 
         //correct for false == empty logic in django form processing
@@ -433,7 +442,10 @@
                 <tbody>
                 <tr>
                     <td>
-                        <div>{{invoice.location}}, <span id="invoice_date" class="invoice_field editable">{{invoice.invoice_date|date:date_format}}</span></div>
+                        <div>
+                            {{invoice.location}}, 
+                            <span id="invoice_date" class="invoice_field editable date">{{invoice.invoice_date|date:date_format}}</span>
+                        </div>
                         <div>{% trans 'Invoice #' %} {{invoice.number}}/{{invoice.year}}</div>
                         <br />
                         <div>{% trans 'Customer' %}:</div>
@@ -513,6 +525,14 @@
                     <td colspan="2" class="blank"> </td>
                 </tr>
                 </tbody>
+            </table>
+        </div>
+        <div id="bottom">
+            <table>
+                <tr>
+                    <td>{% trans 'Due date' %}:&nbsp;</td>
+                    <td id="due_date" class="invoice_field editable date">{{invoice.due_date|date:date_format}}</td>
+                </tr>
             </table>
         </div>
         <div id="terms" class="invoice_field editable textarea">{{invoice.terms|linebreaksbr}}</div>
