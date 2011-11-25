@@ -33,6 +33,6 @@ class ReducedLineItemForm(LineItemForm):
 
 LineItemFormset = inlineformset_factory(
     Invoice, LineItem,
-    fields=('name', 'description', 'price', 'quantity', 'taxable',),
+    fields=('name', 'description', 'price', 'quantity', 'taxable', ),
     extra=0
 )

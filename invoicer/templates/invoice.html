@@ -145,7 +145,11 @@
 
         //send along the id and value so we know what was edited
         data["_element_id"] = element.get("id");
-        data["_value"] = adjustFieldValuesForServer(element, newValue);
+        if ( element.hasClass('numeric') ) {
+            // remove commas used as thousand separators
+            newValue = newValue.replace(/,/gi, '');
+        }
+        data["_value"] = newValue;
 
         //correct for false == empty logic in django form processing
         for (key in data) {
@@ -462,7 +466,7 @@
                 <tbody>
                 {% for form in formset.forms %}
                     <tr id="{{form.id.html_name}}" name="{{form.instance.id}}" class="item-row">
-                        <td id="{{form.name.html_name}}" class="item editable textarea">{{form.initial.name|linebreaksbr}}</td>
+                        <td id="{{form.name.html_name}}" class="name editable textarea">{{form.initial.name|linebreaksbr}}</td>
                         <td id="{{form.price.html_name}}" class="numeric price editable recalc">{{ form.initial.price|floatformatex:2 }}</td>
                         <td id="{{form.quantity.html_name}}" class="numeric quantity editable recalc">{{ form.initial.quantity|floatformatex:2 }}</td>
                         <td class="numeric ext_price">{{ form.instance.ext_price|floatformatex:2 }}</td>
@@ -471,6 +475,7 @@
                         <td class="delete-row blank">
                             <input type="checkbox" name="{{form.instance.id}}"></input>
                         </td>
+                        <td id="{{form.position.html_name}}" class="position blank">{{form.initial.position}}</td>
                     </tr>
                 {% endfor %}
                 <tr>

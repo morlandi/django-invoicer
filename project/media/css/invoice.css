@@ -1,3 +1,4 @@
+
 #invoice-container {
     border: 1px solid black;
     margin: 20px;
@@ -115,11 +116,12 @@
     vertical-align: bottom;
 }
 
-.invoice #items td.item { width: 60%; }
+.invoice #items td.name { width: 60%; }
 .invoice #items td.price { width: 10%; }
 .invoice #items td.quantity { width: 12%; }
 .invoice #items td.ext_price { width: 15%; }
 .invoice #items td.delete { width: 3%; }
+.invoice #items td.position { width: 0%; display: none;}
 
 .invoice #items td.concealed {
     display: none;

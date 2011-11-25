@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 class LineItemInline(admin.TabularInline):
     model = LineItem
-    fields = ("item", "name", "price", "quantity", "taxable")
+    fields = ("item", "name", "price", "quantity", "taxable", "position",)
     extra = 1
 
 class InvoiceInline(admin.TabularInline):

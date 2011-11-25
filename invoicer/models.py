@@ -11,6 +11,7 @@ from invoicer.utils import generate_next_invoice_number
 from invoicer.utils import get_company
 from invoicer.handlers import organize_files_by_pk
 from django.utils.translation import ugettext_lazy as _
+from positions.fields import PositionField
 
 __all__ = ['Client', 'Company', 'Terms', 'LineItem', 'InvoiceManager',
             'Invoice', 'Item']
@@ -86,10 +87,12 @@ class LineItem(AbstractItem):
     item = models.ForeignKey("Item", blank=True, null=True)
     quantity = models.DecimalField(max_digits=7, decimal_places=2, default="1")
     invoice = models.ForeignKey("Invoice", related_name="line_items", editable=False)
+    position = PositionField(collection=('invoice', ), verbose_name=_(u'Position') )
 
     class Meta:
         verbose_name = "Line Item"
         verbose_name_plural = "Line Items"
+        ordering = ('position', )
 
     def ext_price(self):
         ext_price = self.price * self.quantity
