@@ -48,7 +48,6 @@ def view_invoice(request, year, number):
         "date_format": i18n_date_format(request),
         "compact": invoice.company.use_compact_invoice,
     }
-    messages.warning(request, i18n_date_format(request))
     return render_to_response('invoice.html', context, context_instance=RequestContext(request))
 
 @login_required

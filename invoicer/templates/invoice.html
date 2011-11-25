@@ -182,8 +182,10 @@
             }
         }
         else {
+            var text = "";
             for ( var key in result.errors ) {
-                text += key + ': ' + result.errors[key] + '<br />';
+                if (key.length>0 ) text += key + ': ';
+                text += result.errors[key] + '<br />';
             }
             displayMessage("{% trans 'ERROR' %}", text);
         }
