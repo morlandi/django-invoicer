@@ -15,32 +15,12 @@ from django.utils.translation import ugettext_lazy as _
 __all__ = ['Client', 'Company', 'Terms', 'LineItem', 'InvoiceManager',
             'Invoice', 'Item']
 
-# class Entity(models.Model):
-#     name = models.CharField(max_length=128)
-#     contact_person = models.CharField(max_length=128, blank=True)
-#     address = models.CharField(max_length=100, blank=True)
-#     city = models.CharField(max_length=60, blank=True)
-#     state = USStateField(blank=True)
-#     zip_code = models.CharField(max_length=10, blank=True)
-#     phone_number = PhoneNumberField(blank=True)
-#     email = models.EmailField(max_length=80, blank=True)
-
-#     class Meta:
-#         abstract = True
-
-#     def __unicode__(self):
-#         return self.name
-
-#     def full_address(self):
-#         return "%s, %s, %s %s" %(self.address, self.city, self.state, self.zip_code,)
-
 class Client(models.Model):
     name = models.CharField(max_length=128)
     vat_id = models.CharField(max_length=32, blank=True)
     fiscal_code = models.CharField(max_length=32, blank=True)
     administrative_address = models.TextField(blank=True)
     delivery_address = models.TextField(blank=True)
-    #project = models.CharField(max_length=128, blank=True)
 
     @models.permalink
     def get_absolute_url(self):
@@ -57,17 +37,13 @@ class Client(models.Model):
         return self.name
 
 class Company(models.Model):
-    #website = models.URLField(max_length=100, blank=True)
-    #numbering_prefix = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=128)
     location = models.CharField(max_length=60, blank=True)
     billing_email = models.EmailField(max_length=80, blank=True)
     tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
     use_compact_invoice = models.BooleanField(default = False)
-
     logo = models.ImageField(max_length=512, blank=True, default='', upload_to='logo')
     invoice_footer = models.TextField(blank=True)
-    #invoice_stylesheet = models.TextField(blank=True)
 
     class Meta:
         verbose_name_plural = "Companies"
@@ -97,7 +73,6 @@ class Terms(models.Model):
 class AbstractItem(models.Model):
     name = models.TextField(blank=True)
     description = models.CharField(max_length=256, blank=True)
-    #cost = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
     price = models.DecimalField(max_digits=7, decimal_places=2, default=0.0)
     taxable = models.BooleanField(default = True)
 
@@ -130,7 +105,6 @@ class LineItem(AbstractItem):
         if self.item_id is not None:
             self.name = self.item.name
             self.description = self.item.description
-            #self.cost = self.item.cost
             self.price = self.item.price
             self.taxable = self.item.taxable
         super(LineItem, self).save(*args, **kwargs)
@@ -216,24 +190,6 @@ class Invoice(models.Model):
         super(Invoice, self).save(force_insert, force_update)
         #if self.fix_internal_values():
             #self.save()
-
-#def stylesheet_upload(instance, filename):
-#    file, ext = os.path.splitext(filename)
-#    file_slug = '%s%s' %(slugify(file), ext,)
-#    company_id = unicode(instance.company.id)
-#    #upload_dir = settings.get("INVOICER_UPLOAD_DIR", "invoicer").strip("/")
-#    upload_dir = getattr(settings, "INVOICER_UPLOAD_DIR", "invoicer").strip("/")
-#    return os.path.join(upload_dir, "stylesheets", company_id, file_slug)
-#
-#class Stylesheet(models.Model):
-#    company = models.ForeignKey("Company", related_name="stylesheets")
-#    name = models.CharField(max_length=128)
-#    description = models.CharField(max_length=256)
-#    stylesheet = models.FileField(upload_to=stylesheet_upload)
-#    introduction_text = models.TextField(max_length=256, blank=True)
-#    feedback_text = models.TextField(max_length=256, blank=True)
-#    misc_text = models.TextField(max_length=256, blank=True)
-#    thank_you_text = models.TextField(max_length=256, blank=True)
 
 class Item(AbstractItem):
     pass
