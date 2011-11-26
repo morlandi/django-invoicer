@@ -12,8 +12,8 @@ class LineItemInline(admin.TabularInline):
     extra = 1
 
 class InvoiceInline(admin.TabularInline):
-    fields = ("invoice_date", "status", "due_date", "company", )
-    readonly_fields = ("invoice_date", "due_date", "company",)
+    fields = ("__unicode__", "invoice_date", "locked", "paid", "due_date", )
+    readonly_fields = ("__unicode__", "invoice_date", "locked", "paid", "due_date", )
     model = Invoice
     max_num = 0
     extra = 0
@@ -52,21 +52,20 @@ class TermsAdmin(admin.ModelAdmin):
 class InvoiceAdmin(admin.ModelAdmin):
     add_form = InvoiceCreationForm
     model = Invoice
-    list_display = ("__unicode__", 'view_on_site', "number", "year", "client", "company", "invoice_date", "due_date", "status",)
-    list_filter = ("year", "client", "invoice_date", "due_date", "status",)
-    list_editable = ("status",)
+    list_display = ("__unicode__", 'view_on_site', "number", "year", "client", "locked", "paid", "invoice_date", "due_date", )
+    list_filter = ("year", "client", "invoice_date", "due_date", "locked", "paid", )
     search_fields = ("number", )
     readonly_fields = ("company", "year", )
     date_hierarchy = 'invoice_date'
     fieldsets = (
-        (None, {"fields": (("number", "client", "tax_rate", "company",), ("invoice_date", "location", "year",), ("terms", "due_date",), ("status", "status_notes",), 'footer', )}),
+        (None, {"fields": (("number", "client", "tax_rate", "company",), ("invoice_date", "location", "year",), ("terms", "due_date",), ("locked", "paid", "notes",), 'footer', )}),
         ('Address', {'fields': (('left_address','right_address',),),}),
     )
     add_fieldsets = (
         (None, {"fields": ('number', 'client', 'invoice_date', )}),
     )
     inlines = (LineItemInline,)
-   
+
     def view_on_site(self, obj):
         url = obj.get_absolute_url()
         description = unicode(_(u'Edit'))
@@ -78,7 +77,7 @@ class InvoiceAdmin(admin.ModelAdmin):
        if not obj:
            return self.add_fieldsets
        return super(InvoiceAdmin, self).get_fieldsets(request, obj)
-   
+
     def get_form(self, request, obj=None, **kwargs):
        """
        Use special form during user creation

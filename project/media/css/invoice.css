@@ -3,7 +3,7 @@ body {
 }
 
 table {
-    border-collapse: separate; 
+    border-collapse: separate;
     border-spacing: 2px;
 }
 
@@ -37,6 +37,23 @@ table {
 
 #invoice-wrapper #logo img {
     float: right;
+}
+
+#invoice-wrapper #draft {
+    color: #f33;
+    border: 3px solid #f33;
+    width: 400px;
+    height: 50px;
+    text-align: center;
+    margin: 5px;
+    padding-top: 20px;
+    font-size: 3em;
+    font-weight: bold;
+    font-family: Verdana;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    float: left;
 }
 
 #invoice-wrapper #header table { width: 100%; }

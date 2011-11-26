@@ -28,20 +28,17 @@
     </style>
     <style type="text/css" media="screen">
         <!--
-        /*
-        #invoice-wrapper>div {
+        #Xinvoice-wrapper>div {
             border: 3px solid #fdd;
             margin: -3px;
         }
-        */
         .editable {
-            background-color: #ffc;
+            background-color: #eee;
         }
 
         .editable-empty {
             padding: 9px 0;
         }
-
         -->
     </style>
 {% endblock %}
@@ -341,82 +338,91 @@
 
     window.addEvent('domready', function() {
 
-        // Find and setup the editable areas;
-        // adapted from http://davidwalsh.name/editable-content-mootools-php-mysql
         $$('.editable').each(function(el) {
-            if ( el.get('text')=='' ) {
-                el.addClass('editable-empty');
+
+            if ( {{invoice.locked|lower}} ) {
+                el.removeClass('editable');
             }
-            //add double-click and blur events
-            el.addEvent('dblclick',function() {
-                //store "before" message
-                var before = el.get('html');
-                //erase current
-                el.set('html','');
-                //replace current text/content with input or textarea element
-                if(el.hasClass('textarea'))
-                {
-                    // replace <br> with newlines
-                    var input = new Element('textarea', { 'class':'editbox', 'html':br2nl(before) });
-                    input.store('before', before);
-                    input.addEvent('keydown', function(e) { if(e.key == 'esc') { this.store('cancelled', 1); this.fireEvent('blur'); } });
+            else {
+                // Find and setup the editable areas;
+                // adapted from http://davidwalsh.name/editable-content-mootools-php-mysql
+
+                if ( el.get('text')=='' ) {
+                    el.addClass('editable-empty');
                 }
-                else
-                {
-                    var input = new Element('input', { 'class':'editbox', 'value':before });
-                    input.store('before', before);
-                    //blur input when they press "Enter"
-                    input.addEvent('keydown', function(e) { if (e.key=='esc') this.store('cancelled',1); if(e.key=='enter' || e.key=='esc') { this.fireEvent('blur'); } });
-                }
-                input.inject(el).select();
-                //add blur event to input
-                input.addEvent('blur', function() {
-                    if ( this.retrieve('cancelled',0) ) {
-                        el.set('html', this.retrieve('before', ''));
-                        return;
+                //add double-click and blur events
+                el.addEvent('dblclick',function() {
+                    //store "before" message
+                    var before = el.get('html');
+                    //erase current
+                    el.set('html','');
+                    //replace current text/content with input or textarea element
+                    if(el.hasClass('textarea'))
+                    {
+                        // replace <br> with newlines
+                        var input = new Element('textarea', { 'class':'editbox', 'html':br2nl(before) });
+                        input.store('before', before);
+                        input.addEvent('keydown', function(e) { if(e.key == 'esc') { this.store('cancelled', 1); this.fireEvent('blur'); } });
                     }
-                    var oldValue = this.retrieve('before','');
-                    var newValue = input.get('value');
-                    //get value, place it in original element
-                    el.set('html',oldValue).addClass(newValue != '' ? '' : 'editable-empty');
-                    editInvoice(el, oldValue, newValue);
+                    else
+                    {
+                        var input = new Element('input', { 'class':'editbox', 'value':before });
+                        input.store('before', before);
+                        //blur input when they press "Enter"
+                        input.addEvent('keydown', function(e) { if (e.key=='esc') this.store('cancelled',1); if(e.key=='enter' || e.key=='esc') { this.fireEvent('blur'); } });
+                    }
+                    input.inject(el).select();
+                    //add blur event to input
+                    input.addEvent('blur', function() {
+                        if ( this.retrieve('cancelled',0) ) {
+                            el.set('html', this.retrieve('before', ''));
+                            return;
+                        }
+                        var oldValue = this.retrieve('before','');
+                        var newValue = input.get('value');
+                        //get value, place it in original element
+                        el.set('html',oldValue).addClass(newValue != '' ? '' : 'editable-empty');
+                        editInvoice(el, oldValue, newValue);
+                    });
+                });
+            }
+        });
+
+        {% if not invoice.locked %}
+            // "Delete row" checkboxes
+            $$("tr.item-row .delete-row input[type=checkbox]").each(function(checkbox){
+                checkbox.set('checked',false);
+                checkbox.addEvent('click', function(){
+                    var row = this.getParent().getParent();
+                    if (checkbox.get('checked')) {
+                        row.addClass('to-be-deleted');
+                    }
+                    else {
+                        row.removeClass('to-be-deleted');
+                    }
                 });
             });
-        });
 
-        // "Delete row" checkboxes
-        $$("tr.item-row .delete-row input[type=checkbox]").each(function(checkbox){
-            checkbox.set('checked',false);
-            checkbox.addEvent('click', function(){
-                var row = this.getParent().getParent();
-                if (checkbox.get('checked')) {
-                    row.addClass('to-be-deleted');
-                }
-                else {
-                    row.removeClass('to-be-deleted');
-                }
-            });
-        });
-
-        // "Add row to invoice" tool
-        document.id('add-row-button').addEvent('click',function(e){
-            e.stop();
-            var url = '{% url invoicer:add_line invoice.year invoice.number %}';
-            var myBox = new AddRowModalBox({
-                url: url
-            });
-        });
-
-        // "Remove rows form invoice" tool
-        document.id('delete-rows-button').addEvent('click',function(e){
-            e.stop();
-            if ( collectRowsToDeleteIds().length ) {
+            // "Add row to invoice" tool
+            document.id('add-row-button').addEvent('click',function(e){
+                e.stop();
                 var url = '{% url invoicer:add_line invoice.year invoice.number %}';
-                var myBox = new ConfirmDeleteRowsModalBox({
+                var myBox = new AddRowModalBox({
                     url: url
                 });
-            }
-        });
+            });
+
+            // "Remove rows form invoice" tool
+            document.id('delete-rows-button').addEvent('click',function(e){
+                e.stop();
+                if ( collectRowsToDeleteIds().length ) {
+                    var url = '{% url invoicer:add_line invoice.year invoice.number %}';
+                    var myBox = new ConfirmDeleteRowsModalBox({
+                        url: url
+                    });
+                }
+            });
+        {% endif %}
 
     });
 
@@ -436,6 +442,11 @@
     <div id="invoice-container">
     <div id="invoice-wrapper">
         <div id="logo">
+            {% if not invoice.locked %}
+                <div id="draft">
+                    {% trans 'Draft'|upper %}
+                </div>
+            {% endif %}
             <img alt="{{invoice.company.name}}" src="{{invoice.company.logo.url}}" />
         </div>
         <div id="header">
@@ -444,7 +455,7 @@
                 <tr>
                     <td>
                         <div>
-                            {{invoice.location}}, 
+                            {{invoice.location}},
                             <span id="invoice_date" class="invoice_field editable date">{{invoice.invoice_date|date:date_format}}</span>
                         </div>
                         <div>{% trans 'Invoice #' %} {{invoice.number}}/{{invoice.year}}</div>
@@ -500,12 +511,24 @@
                     </tr>
                 {% endfor %}
                 <tr>
-                    <td class="blank" style="text-align: left"><a href="#" class="link-button" id="add-row-button">{% trans 'Add' %}</a></td>
+                    <td class="blank" style="text-align: left">
+                        {% if invoice.locked %}
+                            &nbsp;
+                        {% else %}
+                            <a href="#" class="link-button" id="add-row-button">{% trans 'Add' %}</a>
+                        {% endif %}
+                    </td>
                     <td colspan="3" class="blank">&nbsp;</td>
                     {%if not compact%}
                         <td class="blank">&nbsp;</td>
                     {% endif %}
-                    <td class="blank"><a href="#" class="link-button" id="delete-rows-button">{% trans 'Del' %}</a></td>
+                    <td class="blank">
+                        {% if invoice.locked %}
+                            &nbsp;
+                        {% else %}
+                            <a href="#" class="link-button" id="delete-rows-button">{% trans 'Del' %}</a>
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <td class="blank"> </td>

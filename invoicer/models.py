@@ -119,13 +119,6 @@ class InvoiceManager(models.Manager):
 class Invoice(models.Model):
     objects = models.Manager()
     manager = InvoiceManager()
-    STATUS_CHOICES = (
-        ("unsent", "Unsent"),
-        ("sent", "Sent"),
-        ("partial", "Partial Payment"),
-        ("paid", "Paid In Full"),
-        ("other", "Other"),
-    )
     company = models.ForeignKey(Company, related_name='invoices')
     location = models.CharField(max_length=60, blank=True)
     client = models.ForeignKey(Client, related_name='invoices')
@@ -135,12 +128,13 @@ class Invoice(models.Model):
     year = models.IntegerField()
     number = models.IntegerField(blank=True, help_text='leave empty for automatic assignment')
     due_date = models.DateField(default=date.today, null=True, blank=True)
-    status = models.CharField(max_length=10, default="unsent", choices=STATUS_CHOICES)
-    status_notes = models.CharField(max_length=128, blank=True)
     #terms = models.ForeignKey(Terms, null=True, blank=True)
     terms = models.TextField(max_length=512, blank=True)
     tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
     footer = models.TextField(blank=True)
+    locked = models.BooleanField(default = False, verbose_name=_(u'Locked'), )
+    paid = models.BooleanField(default = False, verbose_name=_(u'Paid'), )
+    notes = models.TextField(max_length=512, blank=True)
 
     class Meta:
         ordering = ('-year', '-number',)
