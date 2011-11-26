@@ -64,6 +64,10 @@ table {
     height: 16px;
 }
 
+#invoice-wrapper .client-name {
+    font-weight: bold;
+}
+
 #invoice-wrapper #footer {
     border-top: 1px solid #aaa;
     text-align: center;
@@ -83,8 +87,8 @@ table {
     vertical-align: bottom;
 }
 
-.invoice #items td.name { width: 60%; }
-.invoice #items td.price { width: 10%; }
+.invoice #items td.name { width: 55%; }
+.invoice #items td.price { width: 15%; }
 .invoice #items td.quantity { width: 12%; }
 .invoice #items td.ext_price { width: 15%; }
 .invoice #items td.delete { width: 3%; }

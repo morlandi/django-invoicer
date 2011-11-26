@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-24 23:59+0100\n"
-"PO-Revision-Date: 2011-11-25 00:03+0100\n"
+"POT-Creation-Date: 2011-11-26 11:14+0100\n"
+"PO-Revision-Date: 2011-11-26 11:18+0100\n"
 "Last-Translator: Mario Orlandi <morlandi@brainstorm.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -17,32 +17,73 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: admin.py:72
+#: admin.py:71
 msgid "Edit"
 msgstr "Modifica"
 
-#: admin.py:75
+#: admin.py:74
 msgid "View on site"
 msgstr "Visualizza sul sito"
 
-#: views.py:59
-#: views.py:99
-#: views.py:122
+#: models.py:90
+msgid "Position"
+msgstr "Posizione"
+
+#: models.py:135
+#: views.py:110
+#: views.py:132
+msgid "Locked"
+msgstr "Bloccato"
+
+#: models.py:136
+msgid "Paid"
+msgstr "Pagato"
+
+#: views.py:58
+#: views.py:103
+#: views.py:129
 msgid "Not authorized"
 msgstr "Non autorizzato"
 
-#: views.py:129
+#: views.py:74
+msgid "Cannot modify invoice year"
+msgstr "L'anno non può essere modificato"
+
+#: views.py:139
 msgid "Invalid line item specified"
 msgstr "Riga non valida"
 
-#: views.py:134
+#: views.py:144
 msgid "1 line item deleted"
 msgstr "1 riga eliminata"
 
-#: views.py:136
+#: views.py:146
 #, python-format
 msgid "%d line items deleted"
 msgstr "%d righe eliminate"
+
+#: templates/404.html:5
+#: templates/404.html.py:9
+msgid "Page not found"
+msgstr "Pagina non trovata"
+
+#: templates/404.html:11
+msgid "The requested page was not found."
+msgstr "La pagina richiesta non è stata trovata"
+
+#: templates/404.html:14
+#: templates/500.html:13
+msgid "Click here to open the homepage."
+msgstr "Premi qui per aprire la homepage."
+
+#: templates/500.html:5
+#: templates/500.html.py:8
+msgid "Server error"
+msgstr "Errore di Sistema"
+
+#: templates/500.html:10
+msgid "An error occurred while processing your request, please try again or contact our technical support at "
+msgstr "Si è verificato un errore durante l'elaborazione della richiesta, per favore riprova oppure contatta il supporto tecnico all'indirizzo"
 
 #: templates/client.html:6
 msgid "Client"
@@ -108,49 +149,85 @@ msgstr "aliquota"
 msgid "Invoice"
 msgstr "Fattura"
 
-#: templates/invoice.html:65
+#: templates/invoice.html:75
 msgid "Close"
 msgstr "Chiudi"
 
-#: templates/invoice.html:168
-#: templates/invoice.html.py:188
-#: templates/invoice.html:253
+#: templates/invoice.html:187
+#: templates/invoice.html.py:209
+#: templates/invoice.html:274
 msgid "ERROR"
 msgstr "ERRORE"
 
-#: templates/invoice.html:270
+#: templates/invoice.html:291
 msgid "Add row"
 msgstr "Aggiungi riga"
 
-#: templates/invoice.html:306
+#: templates/invoice.html:327
 msgid "Delete rows"
 msgstr "Elimina righe"
 
-#: templates/invoice.html:423
+#: templates/invoice.html:447
+msgid "Draft"
+msgstr "Bozza"
+
+#: templates/invoice.html:461
 msgid "Invoice #"
 msgstr "Fattura n."
 
-#: templates/invoice.html:425
+#: templates/invoice.html:463
 msgid "Customer"
 msgstr "Cliente"
 
-#: templates/invoice.html:428
+#: templates/invoice.html:466
 msgid "VAT ID"
 msgstr "P.IVA"
 
-#: templates/invoice.html:431
+#: templates/invoice.html:469
 msgid "Fiscal Code"
 msgstr "C.F."
 
-#: templates/invoice.html:475
+#: templates/invoice.html:489
+msgid "Unit price"
+msgstr "Prezzo unitario"
+
+#: templates/invoice.html:490
+msgid "Quantity"
+msgstr "Quantità"
+
+#: templates/invoice.html:491
+msgid "Total price"
+msgstr "Prezzo totale"
+
+#: templates/invoice.html:493
+msgid "Taxable"
+msgstr "Tassabile"
+
+#: templates/invoice.html:518
 msgid "Add"
 msgstr "Aggiungi"
 
-#: templates/invoice.html:480
+#: templates/invoice.html:529
 msgid "Del"
 msgstr "Elimina"
 
-#: templates/invoice.html:511
+#: templates/invoice.html:535
+msgid "Net total"
+msgstr "Totale imponibile"
+
+#: templates/invoice.html:541
+msgid "VAT"
+msgstr "IVA"
+
+#: templates/invoice.html:547
+msgid "Total"
+msgstr "Totale"
+
+#: templates/invoice.html:557
+msgid "Due date"
+msgstr "Scadenza"
+
+#: templates/invoice.html:570
 msgid "Deleted rows will be permanently removed and cannot be recovered. Are you sure?"
 msgstr "Le righe eliminate verranno rimosse in modo permanente e non potranno essere recuperate. Si intende proseguire ?"
 

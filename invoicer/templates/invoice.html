@@ -33,7 +33,7 @@
             margin: -3px;
         }
         .editable {
-            background-color: #eee;
+            background-color: #ffd;
         }
 
         .editable-empty {
@@ -461,7 +461,7 @@
                         <div>{% trans 'Invoice #' %} {{invoice.number}}/{{invoice.year}}</div>
                         <br />
                         <div>{% trans 'Customer' %}:</div>
-                        <div>{{invoice.client.name}}</div>
+                        <div class="client-name">{{invoice.client.name}}</div>
                         {% if invoice.client.vat_id %}
                             <div>{% trans 'VAT ID' %}: {{invoice.client.vat_id}}</div>
                         {% endif %}
@@ -472,7 +472,7 @@
                     </td>
                     <td>&nbsp;</td>
                     <td>
-                        <div>{{invoice.client.name}}</div>
+                        <div class="client-name">{{invoice.client.name}}</div>
                         <div id="right_address" class="invoice_field editable textarea">{{invoice.right_address|linebreaksbr}}</div>
                     </td>
                 </tr>
@@ -486,11 +486,11 @@
                 <thead>
                 <tr>
                     <th class="item" >&nbsp;</th>
-                    <th class="price">Prezzo unitario</th>
-                    <th class="quantity">Quantità</th>
-                    <th class="ext_price">Prezzo totale</th>
+                    <th class="price">{% trans 'Unit price' %}</th>
+                    <th class="quantity">{% trans 'Quantity' %}</th>
+                    <th class="ext_price">{% trans 'Total price' %}</th>
                     {%if not compact%}
-                        <th class="taxable blank">Taxable</th>
+                        <th class="taxable blank">{% trans 'Taxable' %}</th>
                     {%endif%}
                     <th class="delete blank">&nbsp;</th>
                 </tr>
@@ -532,19 +532,19 @@
                 </tr>
                 <tr>
                     <td class="blank"> </td>
-                    <td colspan="2" class="total-line">Totale imponibile</td>
+                    <td colspan="2" class="total-line">{% trans 'Net total' %}</td>
                     <td class="numeric total-value subtotal">{{ invoice.subtotal|floatformatex:2 }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>
                 <tr>
                     <td class="blank"> </td>
-                    <td colspan="2" class="total-line">IVA (<span class="tax_rate">{{ invoice.company.tax_rate }}</span>%)</td>
+                    <td colspan="2" class="total-line">{% trans 'VAT' %} (<span class="tax_rate">{{ invoice.company.tax_rate }}</span>%)</td>
                     <td class="numeric total-value tax">{{ invoice.tax|floatformatex:2 }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>
                 <tr>
                     <td class="blank"> </td>
-                    <td colspan="2" class="total-line bold">TOTALE</td>
+                    <td colspan="2" class="total-line bold">{% trans 'Total'|upper %}</td>
                     <td class="numeric total-value total bold">{{ invoice.total|floatformatex:2 }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>
