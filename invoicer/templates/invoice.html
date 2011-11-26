@@ -117,7 +117,6 @@
         if ( element.hasClass('numeric') ) {
             // remove commas used as thousand separators
             value = value.replace(/,/gi, '');
-            console.log(value);
         }
         return value;
     },
@@ -141,7 +140,6 @@
             data[tr.get("id")] = tr.get("name");
             var tds = tr.getChildren("td");
             tds.each(function(td){
-                console.log(td);
                 var id = td.get("id");
                 // convert <br> to newline
                 if (id) data[id] = adjustFieldValuesForServer(td, td.get("html"));
@@ -199,6 +197,7 @@
             if ( element.hasClass('recalc') ) {
                 recalcRow(element);
             }
+            updateDueDatePrompt();
         }
         else {
             var text = "";
@@ -274,6 +273,15 @@
                 displayMessage("{% trans 'ERROR' %}", result.responseText);
             }.bind(this)
         }).send();
+    },
+
+    updateDueDatePrompt = function() {
+        if ( document.id('due_date').get('text').length > 0 ) {
+            document.id('due_date_prompt').removeClass('hidden');
+        }
+        else {
+            document.id('due_date_prompt').addClass('hidden');
+        }
     },
 
     // Modal box for new row editing
@@ -424,6 +432,7 @@
             });
         {% endif %}
 
+        updateDueDatePrompt();
     });
 
 </script>
@@ -554,7 +563,7 @@
         <div id="bottom">
             <table>
                 <tr>
-                    <td>{% trans 'Due date' %}:&nbsp;</td>
+                    <td><span id="due_date_prompt">{% trans 'Due date' %}:</span>&nbsp;</td>
                     <td id="due_date" class="invoice_field editable date">{{invoice.due_date|date:date_format}}</td>
                 </tr>
             </table>
