@@ -16,3 +16,4 @@ invoicer/stylesheets/*
 *.sublime-workspace
 project/media/invoicer/company/*
 .idea/
+.codeintel/
