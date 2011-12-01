@@ -22,6 +22,7 @@ class Client(models.Model):
     fiscal_code = models.CharField(max_length=32, blank=True)
     administrative_address = models.TextField(blank=True)
     delivery_address = models.TextField(blank=True)
+    bank_address = models.TextField(blank=True)
 
     @models.permalink
     def get_absolute_url(self):
@@ -45,6 +46,7 @@ class Company(models.Model):
     use_compact_invoice = models.BooleanField(default = False)
     logo = models.ImageField(max_length=512, blank=True, default='', upload_to='logo')
     invoice_footer = models.TextField(blank=True)
+    bank_address = models.TextField(blank=True)
 
     class Meta:
         verbose_name_plural = "Companies"
@@ -74,7 +76,7 @@ class Terms(models.Model):
 class AbstractItem(models.Model):
     name = models.TextField(blank=True)
     description = models.CharField(max_length=256, blank=True)
-    price = models.DecimalField(max_digits=7, decimal_places=2, default=0.0)
+    price = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
     taxable = models.BooleanField(default = True)
 
     class Meta:
@@ -85,7 +87,7 @@ class AbstractItem(models.Model):
 
 class LineItem(AbstractItem):
     item = models.ForeignKey("Item", blank=True, null=True)
-    quantity = models.DecimalField(max_digits=7, decimal_places=2, default="1")
+    quantity = models.DecimalField(max_digits=8, decimal_places=2, default="1")
     invoice = models.ForeignKey("Invoice", related_name="line_items", editable=False)
     position = PositionField(collection=('invoice', ), verbose_name=_(u'Position') )
 
@@ -111,6 +113,7 @@ class LineItem(AbstractItem):
             self.price = self.item.price
             self.taxable = self.item.taxable
         super(LineItem, self).save(*args, **kwargs)
+        self.invoice._update_cached_values()
 
 class InvoiceManager(models.Manager):
     def get_query_set(self):
@@ -135,6 +138,8 @@ class Invoice(models.Model):
     locked = models.BooleanField(default = False, verbose_name=_(u'Locked'), )
     paid = models.BooleanField(default = False, verbose_name=_(u'Paid'), )
     notes = models.TextField(max_length=512, blank=True)
+    net_total = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
+    gross_total = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
 
     class Meta:
         ordering = ('-year', '-number',)
@@ -173,20 +178,36 @@ class Invoice(models.Model):
             total += line.total()
         return total
 
-    def fix_internal_values(self):
-        dirty = False
-        if self.company is None:
-            self.company = get_company()
-            dirty = True
-        return dirty
+    # def fix_internal_values(self):
+    #     dirty = False
+    #     if self.company is None:
+    #         self.company = get_company()
+    #         dirty = True
+    #     return dirty
 
     def save(self, force_insert=False, force_update=False):
         self.year = self.invoice_date.year
         if self.number is None:
             self.number = generate_next_invoice_number(self)
         super(Invoice, self).save(force_insert, force_update)
-        #if self.fix_internal_values():
-            #self.save()
+        self._update_cached_values()
+
+    def _update_cached_values(self):
+        dirty = False
+
+        new_net_total = self.subtotal()
+        if self.net_total != new_net_total:
+            self.net_total = new_net_total
+            dirty = True
+
+        new_gross_total = self.total()
+        if self.gross_total != new_gross_total:
+            self.gross_total = new_gross_total
+            dirty = True
+
+        if dirty:
+            super(Invoice, self).save_base()
+        return dirty
 
 class Item(AbstractItem):
     pass

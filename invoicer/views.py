@@ -140,6 +140,7 @@ def delete_lines(request, year, number):
             line_items = LineItem.objects.filter(invoice=invoice,id__in=line_item_ids)
             n = len(line_items)
             line_items.delete()
+            invoice._update_cached_values()
             if n==1:
                 messages.info(request, _(u'1 line item deleted'))
             else:

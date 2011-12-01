@@ -547,7 +547,7 @@
                 </tr>
                 <tr>
                     <td class="blank"> </td>
-                    <td colspan="2" class="total-line">{% trans 'VAT' %} (<span class="tax_rate">{{ invoice.company.tax_rate }}</span>%)</td>
+                    <td colspan="2" class="total-line">{% trans 'VAT' %} (<span class="tax_rate">{{ invoice.company.tax_rate|floatformatex:2 }}</span>%)</td>
                     <td class="numeric total-value tax">{{ invoice.tax|floatformatex:2 }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>

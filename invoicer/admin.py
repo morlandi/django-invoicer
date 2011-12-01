@@ -4,7 +4,19 @@ from invoicer.models import *
 from invoicer.forms import InvoiceCreationForm
 from invoicer.utils import generate_next_invoice_number
 from invoicer.utils import get_company
+from invoicer.admin_views import admin_import_clients
 from django.utils.translation import ugettext_lazy as _
+from django.db import transaction
+from django.conf.urls.defaults import patterns
+from django.conf.urls.defaults import url
+from django.core.urlresolvers import reverse
+from django.contrib import messages
+from django.conf import settings
+from django.utils.safestring import mark_safe
+from django.http import HttpResponseRedirect
+import traceback
+import sys
+
 
 class LineItemInline(admin.TabularInline):
     model = LineItem
@@ -46,19 +58,41 @@ class ClientAdmin(admin.ModelAdmin):
     list_display = ("name", "vat_id", "receipts_to_date")
     inlines = (InvoiceInline,)
 
+    def get_urls(self):
+        urls = super(ClientAdmin, self).get_urls()
+        my_urls = patterns('',
+            url(r'^import-clients/$', self.admin_site.admin_view(self.do_import_clients), {}, name="invoicer-import-clients" ),
+        )
+        return my_urls + urls
+
+    @transaction.commit_manually
+    def do_import_clients(self, request):
+        next = reverse('admin:invoicer_client_changelist', args=())
+        try:
+            response = admin_import_clients(request, self, next)
+            transaction.commit()
+        except Exception, e:
+            transaction.rollback()
+            messages.error(request, str(e))
+            if settings.DEBUG:
+                messages.warning(request,  mark_safe("<br />".join(traceback.format_tb(sys.exc_info()[2]))))
+                raise
+            return HttpResponseRedirect(next)
+        return response
+
 class TermsAdmin(admin.ModelAdmin):
     model = Terms
 
 class InvoiceAdmin(admin.ModelAdmin):
     add_form = InvoiceCreationForm
     model = Invoice
-    list_display = ("__unicode__", 'view_on_site', "number", "year", "client", "locked", "paid", "invoice_date", "due_date", )
+    list_display = ("__unicode__", 'view_on_site', "number", "year", "client", "net_total", "gross_total", "locked", "paid", "invoice_date", "due_date", )
     list_filter = ("year", "client", "invoice_date", "due_date", "locked", "paid", )
     search_fields = ("number", )
     readonly_fields = ("company", "year", )
     date_hierarchy = 'invoice_date'
     fieldsets = (
-        (None, {"fields": (("number", "client", "tax_rate", "company",), ("invoice_date", "location", "year",), ("terms", "due_date",), ("locked", "paid", "notes",), 'footer', )}),
+        (None, {"fields": (("number", "client", "tax_rate", "company",), ("invoice_date", "location", "year",), ("net_total", "gross_total"), ("terms", "due_date",), ("locked", "paid", "notes",), 'footer', )}),
         ('Address', {'fields': (('left_address','right_address',),),}),
     )
     add_fieldsets = (

@@ -36,3 +36,16 @@ LineItemFormset = inlineformset_factory(
     fields=('name', 'description', 'price', 'quantity', 'taxable', ),
     extra=0
 )
+
+class ImportDataForm(forms.Form):
+    attachment = forms.FileField()
+
+    def save(self, request, klass):
+
+        attachment = self.cleaned_data['attachment']
+        #xls_importer = XlsImporter(request.user, attachment, klass)
+        #(prices_count, bad_tags) = xls_importer.import_prices()
+        count = 999
+
+        return count
+
