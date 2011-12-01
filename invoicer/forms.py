@@ -2,6 +2,7 @@ from django import forms
 from django.forms.models import inlineformset_factory
 from django.utils.translation import ugettext_lazy as _
 from invoicer.models import *
+from invoicer.xls_tools import XlsImporter
 
 class InvoiceCreationForm(forms.ModelForm):
 
@@ -43,9 +44,8 @@ class ImportDataForm(forms.Form):
     def save(self, request, klass):
 
         attachment = self.cleaned_data['attachment']
-        #xls_importer = XlsImporter(request.user, attachment, klass)
-        #(prices_count, bad_tags) = xls_importer.import_prices()
-        count = 999
+        xls_importer = XlsImporter(request.user, attachment, klass)
+        count = xls_importer.import_all_rows()
 
         return count
 
