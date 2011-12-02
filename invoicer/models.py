@@ -17,19 +17,25 @@ __all__ = ['Client', 'Company', 'Terms', 'LineItem', 'InvoiceManager',
             'Invoice', 'Item']
 
 class Client(models.Model):
-    name = models.CharField(max_length=128)
-    vat_id = models.CharField(max_length=32, blank=True)
+    name = models.CharField(max_length=128, unique=True)
+    vat_id = models.CharField(max_length=32)
     fiscal_code = models.CharField(max_length=32, blank=True)
+    email = models.EmailField(max_length=80, blank=True)
     administrative_address = models.TextField(blank=True)
     delivery_address = models.TextField(blank=True)
     bank_address = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = _(u'Client')
+        verbose_name_plural = _(u'Clients')
+        ordering = ['name',]
 
     @models.permalink
     def get_absolute_url(self):
         return ('invoicer:client', (), {'id':self.id})
 
     def receipts_to_date(self):
-        items = LineItem.objects.filter(invoice__client=self).only("price", "quantity", "taxable", "invoice__company__tax_rate").select_related("invoice__company")
+        items = LineItem.objects.filter(invoice__client=self).only("price", "quantity", "taxable", "invoice__tax_rate").select_related("invoice__company")
         total = 0
         for item in items:
             total += item.total()
@@ -41,8 +47,8 @@ class Client(models.Model):
 class Company(models.Model):
     name = models.CharField(max_length=128)
     location = models.CharField(max_length=60, blank=True)
-    billing_email = models.EmailField(max_length=80, blank=True)
-    tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
+    email = models.EmailField(max_length=80, blank=True)
+    invoice_tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
     use_compact_invoice = models.BooleanField(default = False)
     logo = models.ImageField(max_length=512, blank=True, default='', upload_to='logo')
     invoice_footer = models.TextField(blank=True)
@@ -57,9 +63,6 @@ class Company(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('invoicer:company', (), {'id':self.id})
-
-    def tax_multiplier(self):
-        return self.tax_rate/100 + 1
 
 signals.post_save.connect(organize_files_by_pk, sender=Company)
 
@@ -103,7 +106,7 @@ class LineItem(AbstractItem):
     def total(self):
         total = self.ext_price()
         if self.taxable:
-            total = total * self.invoice.company.tax_multiplier()
+            total = total * self.invoice.tax_rate/Decimal('100.0')
         return total.quantize(Decimal('.01'))
 
     def save(self, *args, **kwargs):
@@ -122,21 +125,23 @@ class InvoiceManager(models.Manager):
 class Invoice(models.Model):
     objects = models.Manager()
     manager = InvoiceManager()
+
+    number = models.IntegerField(blank=True, help_text='leave empty for automatic assignment')
+    year = models.IntegerField()
     company = models.ForeignKey(Company, related_name='invoices')
-    location = models.CharField(max_length=60, blank=True)
+    invoice_date = models.DateField(default=date.today)
     client = models.ForeignKey(Client, related_name='invoices')
+    location = models.CharField(max_length=60, blank=True)
+    tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
     left_address = models.TextField(blank=True)
     right_address = models.TextField(blank=True)
-    invoice_date = models.DateField(default=date.today)
-    year = models.IntegerField()
-    number = models.IntegerField(blank=True, help_text='leave empty for automatic assignment')
-    due_date = models.DateField(default=date.today, null=True, blank=True)
-    #terms = models.ForeignKey(Terms, null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
     terms = models.TextField(max_length=512, blank=True)
-    tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
+
     footer = models.TextField(blank=True)
     locked = models.BooleanField(default = False, verbose_name=_(u'Locked'), )
     paid = models.BooleanField(default = False, verbose_name=_(u'Paid'), )
+    paid_date = models.DateField(null=True, blank=True)
     notes = models.TextField(max_length=512, blank=True)
     net_total = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
     gross_total = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
@@ -163,7 +168,7 @@ class Invoice(models.Model):
         return taxable
 
     def tax(self):
-        tax = self.taxable_amount() * self.company.tax_rate/100
+        tax = self.taxable_amount() * self.tax_rate/100.0
         return tax.quantize(Decimal('.01'))
 
     def subtotal(self):

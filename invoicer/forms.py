@@ -42,10 +42,8 @@ class ImportDataForm(forms.Form):
     attachment = forms.FileField()
 
     def save(self, request, klass):
-
         attachment = self.cleaned_data['attachment']
         xls_importer = XlsImporter(request.user, attachment, klass)
         count = xls_importer.import_all_rows()
-
         return count
 

@@ -7,9 +7,10 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 
 @staff_member_required
-def admin_import_clients(request, model_admin, next):
+def admin_import_data(request, model_admin, next):
 
-    from invoicer.models import Client
+    klass = model_admin.model
+    title = '%s %s' % (unicode(_(u'Import')), klass._meta.verbose_name_plural)
 
     # see http://www.slideshare.net/lincolnloop/customizing-the-django-admin
     opts = model_admin.model._meta
@@ -19,8 +20,8 @@ def admin_import_clients(request, model_admin, next):
     if request.method == 'POST':
         form = ImportDataForm(request.POST,request.FILES)
         if form.is_valid():
-            count = form.save(request, Client)
-            text = _(u'%d clients successfully imported') % count
+            count = form.save(request, klass)
+            text = _(u'%d rows successfully imported') % count
             messages.info(request, text)
             return HttpResponseRedirect(next)
     else:
@@ -28,7 +29,7 @@ def admin_import_clients(request, model_admin, next):
 
     context = {
         'admin_site': admin_site.name,
-        'title': unicode(_('Import clients')),
+        'title': title,
         'opts': opts,
         'root_path': '/%s' % admin_site.root_path,
         'app_label': opts.app_label,

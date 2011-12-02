@@ -57,7 +57,9 @@ table {
 }
 
 #invoice-wrapper #header table { width: 100%; }
-#invoice-wrapper #header td { width: 33%; }
+#invoice-wrapper #header-left-column { width: 40%; }
+#invoice-wrapper #header-middle-column { width: 20%; }
+#invoice-wrapper #header-right-column { width: 40%; }
 
 #invoice-wrapper .date {
     width: 80px;
@@ -132,7 +134,7 @@ table {
 
 .invoice {
     font-family: Arial;
-    font-size: 100%;
+    font-size: 1.2em;
     margin: 0px;
     padding: 0;
 }

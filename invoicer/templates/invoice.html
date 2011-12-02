@@ -19,6 +19,7 @@
             height: 0;
         }
 
+        .invoice #admin-link,
         .messagelist,
         .link-button,
         .delete-row input {
@@ -440,6 +441,10 @@
 
 {% block content %}
 
+    <div id="admin-link">
+        <a href="{% url admin:invoicer_invoice_change invoice.pk %}">{% trans 'View in admin' %}</a>
+    </div>
+
     {% if messages %}
     <ul class="messagelist">
         {% for message in messages %}
@@ -462,7 +467,7 @@
             <table>
                 <tbody>
                 <tr>
-                    <td>
+                    <td id="header-left-column">
                         <div>
                             {{invoice.location}},
                             <span id="invoice_date" class="invoice_field editable date">{{invoice.invoice_date|date:date_format}}</span>
@@ -479,8 +484,8 @@
                         {% endif %}
                         <div id="left_address" class="invoice_field editable textarea">{{invoice.left_address|linebreaksbr}}</div>
                     </td>
-                    <td>&nbsp;</td>
-                    <td>
+                    <td id="header-middle-column">&nbsp;</td>
+                    <td id="header-right-column">
                         <div class="client-name">{{invoice.client.name}}</div>
                         <div id="right_address" class="invoice_field editable textarea">{{invoice.right_address|linebreaksbr}}</div>
                     </td>
@@ -547,7 +552,7 @@
                 </tr>
                 <tr>
                     <td class="blank"> </td>
-                    <td colspan="2" class="total-line">{% trans 'VAT' %} (<span class="tax_rate">{{ invoice.company.tax_rate|floatformatex:2 }}</span>%)</td>
+                    <td colspan="2" class="total-line">{% trans 'VAT' %} (<span class="tax_rate">{{ invoice.tax_rate|floatformatex:2 }}</span>%)</td>
                     <td class="numeric total-value tax">{{ invoice.tax|floatformatex:2 }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>

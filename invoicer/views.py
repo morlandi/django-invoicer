@@ -150,7 +150,6 @@ def delete_lines(request, year, number):
     return HttpResponse('ok')
 
 def paginate_invoices(request, entity, page):
-    import pdb; pdb.set_trace() ## PDB_DEBUG ##
     set_cookie = False
     if request.method == "GET" and hasattr(request.GET, 'per_page'):
         per_page = request.GET["per_page"]

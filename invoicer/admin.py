@@ -4,7 +4,7 @@ from invoicer.models import *
 from invoicer.forms import InvoiceCreationForm
 from invoicer.utils import generate_next_invoice_number
 from invoicer.utils import get_company
-from invoicer.admin_views import admin_import_clients
+from invoicer.admin_views import admin_import_data
 from django.utils.translation import ugettext_lazy as _
 from django.db import transaction
 from django.conf.urls.defaults import patterns
@@ -55,7 +55,9 @@ class CompanyAdmin(admin.ModelAdmin):
 
 class ClientAdmin(admin.ModelAdmin):
     model = Client
-    list_display = ("name", "vat_id", "receipts_to_date")
+    list_display = ('name', 'vat_id', 'fiscal_code', 'receipts_to_date')
+    search_fields = ('name', '=vat_id', '=fiscal_code', )
+
     inlines = (InvoiceInline,)
 
     def get_urls(self):
@@ -69,14 +71,13 @@ class ClientAdmin(admin.ModelAdmin):
     def do_import_clients(self, request):
         next = reverse('admin:invoicer_client_changelist', args=())
         try:
-            response = admin_import_clients(request, self, next)
+            response = admin_import_data(request, self, next)
             transaction.commit()
         except Exception, e:
             transaction.rollback()
             messages.error(request, str(e))
             if settings.DEBUG:
                 messages.warning(request,  mark_safe("<br />".join(traceback.format_tb(sys.exc_info()[2]))))
-                raise
             return HttpResponseRedirect(next)
         return response
 
@@ -87,8 +88,8 @@ class InvoiceAdmin(admin.ModelAdmin):
     add_form = InvoiceCreationForm
     model = Invoice
     list_display = ("__unicode__", 'view_on_site', "number", "year", "client", "net_total", "gross_total", "locked", "paid", "invoice_date", "due_date", )
-    list_filter = ("year", "client", "invoice_date", "due_date", "locked", "paid", )
-    search_fields = ("number", )
+    list_filter = ("year", "invoice_date", "due_date", "locked", "paid", "client", )
+    search_fields = ("number", "client__name")
     readonly_fields = ("company", "year", )
     date_hierarchy = 'invoice_date'
     fieldsets = (
@@ -137,9 +138,29 @@ class InvoiceAdmin(admin.ModelAdmin):
                 obj.left_address = obj.client.administrative_address
             obj.location = obj.company.location
             obj.footer = obj.company.invoice_footer
-            obj.tax_rate = obj.company.tax_rate
+            obj.tax_rate = obj.company.invoice_tax_rate
         super(InvoiceAdmin, self).save_model(request, obj, form, change)
 
+    def get_urls(self):
+        urls = super(InvoiceAdmin, self).get_urls()
+        my_urls = patterns('',
+            url(r'^import-invoices/$', self.admin_site.admin_view(self.do_import_invoices), {}, name="invoicer-import-invoices" ),
+        )
+        return my_urls + urls
+
+    @transaction.commit_manually
+    def do_import_invoices(self, request):
+        next = reverse('admin:invoicer_invoice_changelist', args=())
+        try:
+            response = admin_import_data(request, self, next)
+            transaction.commit()
+        except Exception, e:
+            transaction.rollback()
+            messages.error(request, str(e))
+            if settings.DEBUG:
+                messages.warning(request,  mark_safe("<br />".join(traceback.format_tb(sys.exc_info()[2]))))
+            return HttpResponseRedirect(next)
+        return response
 
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Client, ClientAdmin)
