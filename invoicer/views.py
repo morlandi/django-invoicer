@@ -35,6 +35,7 @@ def dump_post_items(request, prompt):
         for line in lines:
             print line
 
+
 @login_required
 def view_invoice(request, year, number):
 
@@ -50,6 +51,7 @@ def view_invoice(request, year, number):
     }
     return render_to_response('invoice.html', context, context_instance=RequestContext(request))
 
+
 @login_required
 @require_POST
 @csrf_exempt
@@ -63,7 +65,7 @@ def edit_invoice(request, year, number):
 
     if request.is_ajax() and request.method == "POST":
 
-        dump_post_items(request,'edit_invoice')
+        dump_post_items(request, 'edit_invoice')
 
         form = InvoiceForm(request.POST, instance=invoice)
         formset = LineItemFormset(request.POST, instance=invoice)

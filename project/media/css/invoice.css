@@ -70,6 +70,11 @@ table {
     font-weight: bold;
 }
 
+.invoice #admin-link a {
+    font-size: 0.6em;
+    padding-left: 10px;
+}
+
 #invoice-wrapper #footer {
     border-top: 1px solid #aaa;
     text-align: center;
@@ -92,7 +97,7 @@ table {
 .invoice #items td.name { width: 55%; }
 .invoice #items td.price { width: 15%; }
 .invoice #items td.quantity { width: 12%; }
-.invoice #items td.ext_price { width: 15%; }
+.invoice #items td.subtotal { width: 15%; }
 .invoice #items td.delete { width: 3%; }
 .invoice #items td.position { width: 0%; display: none;}
 

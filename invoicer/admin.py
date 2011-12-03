@@ -1,8 +1,12 @@
 from django.contrib import admin
 
-from invoicer.models import *
+from invoicer.models import LineItem
+from invoicer.models import Invoice
+from invoicer.models import Company
+from invoicer.models import Client
+from invoicer.models import Terms
+from invoicer.models import Item
 from invoicer.forms import InvoiceCreationForm
-from invoicer.utils import generate_next_invoice_number
 from invoicer.utils import get_company
 from invoicer.admin_views import admin_import_data
 from django.utils.translation import ugettext_lazy as _
@@ -23,6 +27,7 @@ class LineItemInline(admin.TabularInline):
     fields = ("item", "name", "price", "quantity", "taxable", "position",)
     extra = 1
 
+
 class InvoiceInline(admin.TabularInline):
     fields = ("__unicode__", "invoice_date", "locked", "paid", "due_date", )
     readonly_fields = ("__unicode__", "invoice_date", "locked", "paid", "due_date", )
@@ -34,6 +39,7 @@ class InvoiceInline(admin.TabularInline):
 #    model = Stylesheet
 #    extra = 1
 #    max_num = 1
+
 
 class CompanyAdmin(admin.ModelAdmin):
     # fieldsets = (
@@ -53,6 +59,7 @@ class CompanyAdmin(admin.ModelAdmin):
     model = Company
     #inlines = (StylesheetInline,)
 
+
 class ClientAdmin(admin.ModelAdmin):
     model = Client
     list_display = ('name', 'vat_id', 'fiscal_code', 'receipts_to_date')
@@ -63,7 +70,7 @@ class ClientAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super(ClientAdmin, self).get_urls()
         my_urls = patterns('',
-            url(r'^import-clients/$', self.admin_site.admin_view(self.do_import_clients), {}, name="invoicer-import-clients" ),
+            url(r'^import-clients/$', self.admin_site.admin_view(self.do_import_clients), {}, name="invoicer-import-clients"),
         )
         return my_urls + urls
 
@@ -77,12 +84,14 @@ class ClientAdmin(admin.ModelAdmin):
             transaction.rollback()
             messages.error(request, str(e))
             if settings.DEBUG:
-                messages.warning(request,  mark_safe("<br />".join(traceback.format_tb(sys.exc_info()[2]))))
+                messages.warning(request, mark_safe("<br />".join(traceback.format_tb(sys.exc_info()[2]))))
             return HttpResponseRedirect(next)
         return response
 
+
 class TermsAdmin(admin.ModelAdmin):
     model = Terms
+
 
 class InvoiceAdmin(admin.ModelAdmin):
     add_form = InvoiceCreationForm
@@ -93,8 +102,11 @@ class InvoiceAdmin(admin.ModelAdmin):
     readonly_fields = ("company", "year", )
     date_hierarchy = 'invoice_date'
     fieldsets = (
-        (None, {"fields": (("number", "client", "tax_rate", "company",), ("invoice_date", "location", "year",), ("net_total", "gross_total"), ("terms", "due_date",), ("locked", "paid", "notes",), 'footer', )}),
-        ('Address', {'fields': (('left_address','right_address',),),}),
+        (None, {"fields": (("number", "client", "tax_rate", "company",),
+            ("invoice_date", "location", "year",),
+            ("net_total", "gross_total"), ("terms", "due_date",),
+            ("locked", "paid", "paid_date", "notes",), 'footer', )}),
+        ('Address', {'fields': (('left_address', 'right_address',),), }),
     )
     add_fieldsets = (
         (None, {"fields": ('number', 'client', 'invoice_date', )}),
@@ -109,29 +121,29 @@ class InvoiceAdmin(admin.ModelAdmin):
     view_on_site.short_description = _(u'View on site')
 
     def get_fieldsets(self, request, obj=None):
-       if not obj:
-           return self.add_fieldsets
-       return super(InvoiceAdmin, self).get_fieldsets(request, obj)
+        if not obj:
+            return self.add_fieldsets
+        return super(InvoiceAdmin, self).get_fieldsets(request, obj)
 
     def get_form(self, request, obj=None, **kwargs):
-       """
-       Use special form during user creation
-       """
-       defaults = {}
-       if obj is None:
-           defaults.update({
-               'form': self.add_form,
-               'fields': admin.util.flatten_fieldsets(self.add_fieldsets),
-           })
-       defaults.update(kwargs)
-       return super(InvoiceAdmin, self).get_form(request, obj, **defaults)
+        """
+        Use special form during user creation
+        """
+        defaults = {}
+        if obj is None:
+            defaults.update({
+                'form': self.add_form,
+                'fields': admin.util.flatten_fieldsets(self.add_fieldsets),
+            })
+        defaults.update(kwargs)
+        return super(InvoiceAdmin, self).get_form(request, obj, **defaults)
 
     def save_model(self, request, obj, form, change):
         obj.year = obj.invoice_date.year
         obj.company = get_company()
         if not change:
             # new invoice: fill attributes with suitable defaults
-            if len(obj.client.delivery_address)==0:
+            if len(obj.client.delivery_address) == 0:
                 obj.right_address = obj.client.administrative_address
             else:
                 obj.right_address = obj.client.delivery_address
@@ -144,7 +156,7 @@ class InvoiceAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super(InvoiceAdmin, self).get_urls()
         my_urls = patterns('',
-            url(r'^import-invoices/$', self.admin_site.admin_view(self.do_import_invoices), {}, name="invoicer-import-invoices" ),
+            url(r'^import-invoices/$', self.admin_site.admin_view(self.do_import_invoices), {}, name="invoicer-import-invoices"),
         )
         return my_urls + urls
 
@@ -158,7 +170,7 @@ class InvoiceAdmin(admin.ModelAdmin):
             transaction.rollback()
             messages.error(request, str(e))
             if settings.DEBUG:
-                messages.warning(request,  mark_safe("<br />".join(traceback.format_tb(sys.exc_info()[2]))))
+                messages.warning(request, mark_safe("<br />".join(traceback.format_tb(sys.exc_info()[2]))))
             return HttpResponseRedirect(next)
         return response
 
