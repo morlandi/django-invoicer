@@ -5,7 +5,6 @@ from invoicer.models import Invoice
 from invoicer.models import Company
 from invoicer.models import Client
 from invoicer.models import Terms
-from invoicer.models import Item
 from invoicer.forms import InvoiceCreationForm
 from invoicer.utils import get_company
 from invoicer.admin_views import admin_import_data
@@ -29,8 +28,8 @@ class LineItemInline(admin.TabularInline):
 
 
 class InvoiceInline(admin.TabularInline):
-    fields = ("__unicode__", "invoice_date", "locked", "paid", "due_date", )
-    readonly_fields = ("__unicode__", "invoice_date", "locked", "paid", "due_date", )
+    fields = ("__unicode__", "invoice_date", "gross_total", "locked", "paid", "due_date", )
+    readonly_fields = ("__unicode__", "invoice_date", "gross_total", "locked", "paid", "due_date", )
     model = Invoice
     max_num = 0
     extra = 0
@@ -67,6 +66,16 @@ class ClientAdmin(admin.ModelAdmin):
 
     inlines = (InvoiceInline,)
 
+    fieldsets = (
+        (None, {
+            "fields": ('name', 'vat_id', 'fiscal_code', 'email',),
+        },),
+        (_(u'Addresses'), {
+            'classes': ('collapse',),
+            "fields": ('administrative_address', 'delivery_address', 'bank_address',),
+        },),
+    )
+
     def get_urls(self):
         urls = super(ClientAdmin, self).get_urls()
         my_urls = patterns('',
@@ -99,7 +108,7 @@ class InvoiceAdmin(admin.ModelAdmin):
     list_display = ("__unicode__", 'view_on_site', "number", "year", "client", "net_total", "gross_total", "locked", "paid", "invoice_date", "due_date", )
     list_filter = ("year", "invoice_date", "due_date", "locked", "paid", "client", )
     search_fields = ("number", "client__name")
-    readonly_fields = ("company", "year", )
+    readonly_fields = ("company", "year", 'net_total', 'gross_total',)
     date_hierarchy = 'invoice_date'
     fieldsets = (
         (None, {"fields": (("number", "client", "tax_rate", "company",),
@@ -178,4 +187,3 @@ admin.site.register(Company, CompanyAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(Terms, TermsAdmin)
-admin.site.register(Item)

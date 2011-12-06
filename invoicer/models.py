@@ -1,13 +1,9 @@
 from datetime import date
 from decimal import Decimal
 
-#from django.conf import settings
-#from django.contrib.localflavor.us.models import PhoneNumberField, USStateField
 from django.db import models
-#from django.template.defaultfilters import slugify
 from django.db.models import signals
 from invoicer.utils import generate_next_invoice_number
-#from invoicer.utils import get_company
 from invoicer.handlers import organize_files_by_pk
 from django.utils.translation import ugettext_lazy as _
 from positions.fields import PositionField
@@ -143,6 +139,7 @@ class Invoice(models.Model):
     objects = models.Manager()
     manager = InvoiceManager()
 
+    serial = models.CharField(max_length=60, blank=True, unique=True)
     number = models.IntegerField(blank=True, help_text='leave empty for automatic assignment')
     year = models.IntegerField()
     company = models.ForeignKey(Company, related_name='invoices')
@@ -164,7 +161,7 @@ class Invoice(models.Model):
     gross_total = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
 
     class Meta:
-        ordering = ('-year', '-number',)
+        ordering = ('-serial',)
         unique_together = (('company', 'number', 'year',),)
 
     @models.permalink
@@ -172,33 +169,7 @@ class Invoice(models.Model):
         return ('invoicer:invoice', (), {'year': self.year, 'number': self.number, })
 
     def __unicode__(self):
-        return '%d/%d' % (self.number, self.year)
-
-    #def get_invoice_number(self):
-    #    return "%s%05d" %(self.company.numbering_prefix, self.id,)
-
-    # def taxable_amount(self):
-    #     taxable = 0
-    #     for line in self.line_items.all():
-    #         if line.taxable:
-    #             taxable += line.ext_price()
-    #     return taxable
-
-    # def tax(self):
-    #     tax = self.taxable_amount() * self.tax_rate / 100.0
-    #     return tax.quantize(Decimal('.01'))
-
-    # def subtotal(self):
-    #     subtotal = 0
-    #     for line in self.line_items.all():
-    #         subtotal += line.ext_price()
-    #     return subtotal
-
-    # def total(self):
-    #     total = 0
-    #     for line in self.line_items.all():
-    #         total += line.total()
-    #     return total
+        return self.serial
 
     def tax(self):
         return self.total() - self.subtotal()
@@ -219,6 +190,7 @@ class Invoice(models.Model):
         self.year = self.invoice_date.year
         if self.number is None:
             self.number = generate_next_invoice_number(self)
+        self.serial = '%04d/%04d' % (self.year, self.number)
         super(Invoice, self).save(force_insert, force_update)
         self._update_cached_values()
 

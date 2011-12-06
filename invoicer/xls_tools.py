@@ -58,7 +58,7 @@ class XlsImporter(object):
 
     def _read_cell_as_decimal(self, nrow, column_name):
         text = self._read_cell(nrow, column_name)
-        if len(text)==0:
+        if len(text) == 0:
             text = "0"
         return Decimal(text)
 
@@ -129,7 +129,7 @@ class XlsImporter(object):
         price = self._read_cell_as_decimal(nrow, 'imponibile')
         taxable = True
         line_item = LineItem(invoice=invoice, item=None, quantity=Decimal('1'),
-            name=u'Missing description (imported from Excel summary', description=u'',
+            name=u'Missing description (imported from Excel summary)', description=u'',
             price=price, taxable=taxable)
         line_item.save()
 
