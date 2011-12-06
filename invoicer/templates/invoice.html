@@ -461,7 +461,9 @@
                     {% trans 'Draft'|upper %}
                 </div>
             {% endif %}
-            <img alt="{{invoice.company.name}}" src="{{invoice.company.logo.url}}" />
+            {% if invoice.company.logo %}
+                <img alt="{{invoice.company.name}}" src="{{invoice.company.logo.url}}" />
+            {% endif %}
         </div>
         <div id="header">
             <table>
