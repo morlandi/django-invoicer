@@ -7,6 +7,14 @@ table {
     border-spacing: 2px;
 }
 
+.invoice #nav li
+{
+    display: inline;
+    list-style-type: none;
+    padding-left: 10px;
+    font-size: 0.7em;
+}
+
 #invoice-container {
     border: 1px solid black;
     margin: 20px auto;
@@ -68,11 +76,6 @@ table {
 
 #invoice-wrapper .client-name {
     font-weight: bold;
-}
-
-.invoice #admin-link a {
-    font-size: 0.6em;
-    padding-left: 10px;
 }
 
 #invoice-wrapper #footer {

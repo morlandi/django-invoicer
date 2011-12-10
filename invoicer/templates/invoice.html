@@ -19,7 +19,7 @@
             height: 0;
         }
 
-        .invoice #admin-link,
+        .invoice #nav,
         .messagelist,
         .link-button,
         .delete-row input {
@@ -47,7 +47,12 @@
 {% block body_class %}invoice{% endblock %}
 
 {% block header %}{% endblock %}
-{% block nav %}{% endblock %}
+{% block nav %}
+    <ul id="nav">
+        <li><a href="/">{% trans 'Home' %}</a></li>
+        <li><a href="{% url admin:invoicer_invoice_change invoice.pk %}">{% trans 'View Invoice in admin' %}</a></li>
+    </ul>
+{% endblock %}
 {% block footer %}{% endblock %}
 {% block scripts %}{{ block.super }}
 
@@ -440,10 +445,6 @@
 {% endblock %}
 
 {% block content %}
-
-    <div id="admin-link">
-        <a href="{% url admin:invoicer_invoice_change invoice.pk %}">{% trans 'View in admin' %}</a>
-    </div>
 
     {% if messages %}
     <ul class="messagelist">

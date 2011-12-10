@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-26 11:14+0100\n"
-"PO-Revision-Date: 2011-11-26 11:18+0100\n"
+"POT-Creation-Date: 2011-12-10 15:42+0100\n"
+"PO-Revision-Date: 2011-12-10 15:49+0100\n"
 "Last-Translator: Mario Orlandi <morlandi@brainstorm.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -17,50 +17,96 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: admin.py:71
+#: admin.py:79
+msgid "Addresses"
+msgstr "Indirizzi"
+
+#: admin.py:133
 msgid "Edit"
 msgstr "Modifica"
 
-#: admin.py:74
+#: admin.py:136
+#: templates/admin/invoicer/invoice/change_form.html:12
 msgid "View on site"
 msgstr "Visualizza sul sito"
 
-#: models.py:90
+#: admin.py:179
+#, python-format
+msgid "The %(name)s \"%(obj)s\" was added successfully."
+msgstr "Il %(name)s \"%(obj)s\" è stato creato correttamente."
+
+#: admin.py:183
+msgid "You may edit it again below."
+msgstr "Puoi apportare eventuali modifiche qui sotto."
+
+#: admin.py:193
+#, python-format
+msgid "You may add another %s below."
+msgstr "Puoi creare un altro %s qui sotto."
+
+#: admin.py:228
+msgid "Invoice has correctly been duplicated"
+msgstr "La fattura è stata duplicata correttamente"
+
+#: admin_views.py:13
+msgid "Import"
+msgstr "Importa"
+
+#: admin_views.py:24
+#, python-format
+msgid "%d rows successfully imported"
+msgstr "Sono state importate %d righe"
+
+#: models.py:24
+#: templates/client.html:6
+msgid "Client"
+msgstr "Cliente"
+
+#: models.py:25
+msgid "Clients"
+msgstr "Clientei"
+
+#: models.py:94
 msgid "Position"
 msgstr "Posizione"
 
-#: models.py:135
-#: views.py:110
-#: views.py:132
+#: models.py:155
+#: views.py:112
+#: views.py:134
 msgid "Locked"
 msgstr "Bloccato"
 
-#: models.py:136
+#: models.py:156
 msgid "Paid"
 msgstr "Pagato"
 
-#: views.py:58
-#: views.py:103
-#: views.py:129
+#: views.py:60
+#: views.py:105
+#: views.py:131
 msgid "Not authorized"
 msgstr "Non autorizzato"
 
-#: views.py:74
+#: views.py:76
 msgid "Cannot modify invoice year"
 msgstr "L'anno non può essere modificato"
 
-#: views.py:139
+#: views.py:141
 msgid "Invalid line item specified"
 msgstr "Riga non valida"
 
-#: views.py:144
+#: views.py:147
 msgid "1 line item deleted"
 msgstr "1 riga eliminata"
 
-#: views.py:146
+#: views.py:149
 #, python-format
 msgid "%d line items deleted"
 msgstr "%d righe eliminate"
+
+#: xls_tools.py:166
+#, python-format
+msgid "ERROR at line %d: "
+msgstr "ERRORE alla linea %d:"
 
 #: templates/404.html:5
 #: templates/404.html.py:9
@@ -84,10 +130,6 @@ msgstr "Errore di Sistema"
 #: templates/500.html:10
 msgid "An error occurred while processing your request, please try again or contact our technical support at "
 msgstr "Si è verificato un errore durante l'elaborazione della richiesta, per favore riprova oppure contatta il supporto tecnico all'indirizzo"
-
-#: templates/client.html:6
-msgid "Client"
-msgstr "Cliente"
 
 #: templates/client.html:9
 msgid "name"
@@ -149,85 +191,137 @@ msgstr "aliquota"
 msgid "Invoice"
 msgstr "Fattura"
 
-#: templates/invoice.html:75
+#: templates/invoice.html:52
+msgid "Home"
+msgstr "Pagina iniziale"
+
+#: templates/invoice.html:53
+msgid "View Invoice in admin"
+msgstr "Visualizza la fattura nell'amministrazione"
+
+#: templates/invoice.html:81
 msgid "Close"
 msgstr "Chiudi"
 
-#: templates/invoice.html:187
-#: templates/invoice.html.py:209
-#: templates/invoice.html:274
+#: templates/invoice.html:191
+#: templates/invoice.html.py:214
+#: templates/invoice.html:279
 msgid "ERROR"
 msgstr "ERRORE"
 
-#: templates/invoice.html:291
+#: templates/invoice.html:305
 msgid "Add row"
 msgstr "Aggiungi riga"
 
-#: templates/invoice.html:327
+#: templates/invoice.html:341
 msgid "Delete rows"
 msgstr "Elimina righe"
 
-#: templates/invoice.html:447
+#: templates/invoice.html:462
 msgid "Draft"
 msgstr "Bozza"
 
-#: templates/invoice.html:461
+#: templates/invoice.html:478
 msgid "Invoice #"
 msgstr "Fattura n."
 
-#: templates/invoice.html:463
+#: templates/invoice.html:480
 msgid "Customer"
 msgstr "Cliente"
 
-#: templates/invoice.html:466
+#: templates/invoice.html:483
 msgid "VAT ID"
 msgstr "P.IVA"
 
-#: templates/invoice.html:469
+#: templates/invoice.html:486
 msgid "Fiscal Code"
 msgstr "C.F."
 
-#: templates/invoice.html:489
+#: templates/invoice.html:506
 msgid "Unit price"
 msgstr "Prezzo unitario"
 
-#: templates/invoice.html:490
+#: templates/invoice.html:507
 msgid "Quantity"
 msgstr "Quantità"
 
-#: templates/invoice.html:491
+#: templates/invoice.html:508
 msgid "Total price"
 msgstr "Prezzo totale"
 
-#: templates/invoice.html:493
+#: templates/invoice.html:510
 msgid "Taxable"
 msgstr "Tassabile"
 
-#: templates/invoice.html:518
+#: templates/invoice.html:535
 msgid "Add"
 msgstr "Aggiungi"
 
-#: templates/invoice.html:529
+#: templates/invoice.html:546
 msgid "Del"
 msgstr "Elimina"
 
-#: templates/invoice.html:535
+#: templates/invoice.html:552
 msgid "Net total"
 msgstr "Totale imponibile"
 
-#: templates/invoice.html:541
+#: templates/invoice.html:558
 msgid "VAT"
 msgstr "IVA"
 
-#: templates/invoice.html:547
+#: templates/invoice.html:564
 msgid "Total"
 msgstr "Totale"
 
-#: templates/invoice.html:557
+#: templates/invoice.html:574
 msgid "Due date"
 msgstr "Scadenza"
 
-#: templates/invoice.html:570
+#: templates/invoice.html:587
 msgid "Deleted rows will be permanently removed and cannot be recovered. Are you sure?"
 msgstr "Le righe eliminate verranno rimosse in modo permanente e non potranno essere recuperate. Si intende proseguire ?"
+
+#: templates/admin/invoicer/import_data.html:7
+msgid "Use the form below to import data from an Excel worksheet"
+msgstr "Utilizza la maschera seguente per importare dati da un file Excel"
+
+#: templates/admin/invoicer/import_data.html:13
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] "Si prega di correggere gli errori di seguito evidenziati"
+msgstr[1] ""
+
+#: templates/admin/invoicer/import_data.html:24
+msgid "Excel File"
+msgstr "File Excel"
+
+#: templates/admin/invoicer/import_data.html:30
+msgid "Submit"
+msgstr "Invia"
+
+#: templates/admin/invoicer/import_data.html:31
+msgid "Undo"
+msgstr "Annulla"
+
+#: templates/admin/invoicer/client/change_list.html:10
+msgid "Import clients from Excel file"
+msgstr "Importazione Clienti da Excel"
+
+#: templates/admin/invoicer/client/change_list.html:15
+#: templates/admin/invoicer/invoice/change_list.html:15
+#, python-format
+msgid "Add %(name)s"
+msgstr "Aggiungi %(name)s"
+
+#: templates/admin/invoicer/invoice/change_form.html:8
+msgid "Duplicate Invoice"
+msgstr "Duplica Fattura"
+
+#: templates/admin/invoicer/invoice/change_form.html:10
+msgid "History"
+msgstr "Storia"
+
+#: templates/admin/invoicer/invoice/change_list.html:10
+msgid "Import invoices from Excel file"
+msgstr "Importazione Fatture da Excel"
 

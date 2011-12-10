@@ -1,18 +1,14 @@
 
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns
+from django.conf.urls.defaults import include
 from django.conf import settings
+from django.views.generic.simple import redirect_to
 
 from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Example:
-    # (r'^{{ project_name }}/', include('{{ project_name }}.foo.urls')),
-
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
+    (r'^$', redirect_to, {'url': '/admin/'}),
     (r'^admin/', include(admin.site.urls)),
     (r'', include('invoicer.urls', namespace='invoicer', app_name='invoicer')),
 )
@@ -22,4 +18,3 @@ if settings.DEVELOPMENT or settings.DEBUG:
         (r'^media/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.MEDIA_ROOT}),
     )
-
