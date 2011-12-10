@@ -474,7 +474,7 @@
                             {{invoice.location}},
                             <span id="invoice_date" class="invoice_field editable date">{{invoice.invoice_date|date:date_format}}</span>
                         </div>
-                        <div>{% trans 'Invoice #' %} {{invoice.number}}/{{invoice.year}}</div>
+                        <div>{% trans 'Invoice #' %} {{invoice.number}}</div>
                         <br />
                         <div>{% trans 'Customer' %}:</div>
                         <div class="client-name">{{invoice.client.name}}</div>

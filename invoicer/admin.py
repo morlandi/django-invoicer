@@ -23,6 +23,8 @@ from django.utils.encoding import force_unicode
 from django.http import HttpResponse
 from django.utils.html import escape
 from django.utils.html import escapejs
+from django.shortcuts import get_object_or_404
+from invoicer.utils import duplicate_invoice
 
 
 class LineItemInline(admin.TabularInline):
@@ -200,6 +202,7 @@ class InvoiceAdmin(admin.ModelAdmin):
         urls = super(InvoiceAdmin, self).get_urls()
         my_urls = patterns('',
             url(r'^import-invoices/$', self.admin_site.admin_view(self.do_import_invoices), {}, name="invoicer-import-invoices"),
+            url(r'^(?P<object_id>[\d]+)/duplicate_invoice/$', self.admin_site.admin_view(self.do_duplicate_invoice), {}, name="invoicer-duplicate-invoice"),
         )
         return my_urls + urls
 
@@ -216,6 +219,23 @@ class InvoiceAdmin(admin.ModelAdmin):
                 messages.warning(request, mark_safe("<br />".join(traceback.format_tb(sys.exc_info()[2]))))
             return HttpResponseRedirect(next)
         return response
+
+    @transaction.commit_on_success
+    def do_duplicate_invoice(self, request, object_id):
+        invoice = get_object_or_404(Invoice, pk=int(object_id))
+        try:
+            new_invoice = duplicate_invoice(invoice)
+            messages.info(request, unicode(_(u'Invoice has correctly been duplicated')))
+            url = new_invoice.get_absolute_url()
+            transaction.commit()
+        except Exception, e:
+            transaction.rollback()
+            messages.error(request, str(e))
+            url = reverse('admin:invoicer_invoice_changelist', args=())
+            if settings.DEBUG:
+                messages.warning(request, mark_safe("<br />".join(traceback.format_tb(sys.exc_info()[2]))))
+                #raise
+        return HttpResponseRedirect(url)
 
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Client, ClientAdmin)
