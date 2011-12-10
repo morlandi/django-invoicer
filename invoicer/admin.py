@@ -19,6 +19,10 @@ from django.utils.safestring import mark_safe
 from django.http import HttpResponseRedirect
 import traceback
 import sys
+from django.utils.encoding import force_unicode
+from django.http import HttpResponse
+from django.utils.html import escape
+from django.utils.html import escapejs
 
 
 class LineItemInline(admin.TabularInline):
@@ -161,6 +165,36 @@ class InvoiceAdmin(admin.ModelAdmin):
             obj.footer = obj.company.invoice_footer
             obj.tax_rate = obj.company.invoice_tax_rate
         super(InvoiceAdmin, self).save_model(request, obj, form, change)
+
+    def response_add(self, request, obj, post_url_continue='../%s/'):
+        """
+        Determines the HttpResponse for the add_view stage.
+        Adapted from "django/contrib/admin/optons.py"
+        """
+        opts = obj._meta
+        pk_value = obj._get_pk_val()
+
+        msg = _('The %(name)s "%(obj)s" was added successfully.') % {'name': force_unicode(opts.verbose_name), 'obj': force_unicode(obj)}
+        # Here, we distinguish between different save types by checking for
+        # the presence of keys in request.POST.
+        if "_continue" in request.POST:
+            self.message_user(request, msg + ' ' + _("You may edit it again below."))
+            if "_popup" in request.POST:
+                post_url_continue += "?_popup=1"
+            return HttpResponseRedirect(post_url_continue % pk_value)
+
+        if "_popup" in request.POST:
+            return HttpResponse('<script type="text/javascript">opener.dismissAddAnotherPopup(window, "%s", "%s");</script>' % \
+                # escape() calls force_unicode.
+                (escape(pk_value), escapejs(obj)))
+        elif "_addanother" in request.POST:
+            self.message_user(request, msg + ' ' + (_("You may add another %s below.") % force_unicode(opts.verbose_name)))
+            return HttpResponseRedirect(request.path)
+        else:
+            self.message_user(request, msg)
+            # Redirect to in-page editing view
+            post_url = obj.get_absolute_url()
+            return HttpResponseRedirect(post_url)
 
     def get_urls(self):
         urls = super(InvoiceAdmin, self).get_urls()

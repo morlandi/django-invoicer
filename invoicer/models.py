@@ -1,7 +1,6 @@
+from django.db import models
 from datetime import date
 from decimal import Decimal
-
-from django.db import models
 from django.db.models import signals
 from invoicer.utils import generate_next_invoice_number
 from invoicer.handlers import organize_files_by_pk

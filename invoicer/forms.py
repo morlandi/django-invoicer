@@ -4,24 +4,30 @@ from django.utils.translation import ugettext_lazy as _
 from invoicer.models import *
 from invoicer.xls_tools import XlsImporter
 
+
 class InvoiceCreationForm(forms.ModelForm):
 
     class Meta:
         model = Invoice
         fields = ('number', 'client', 'invoice_date',)
 
+
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
         fields = ('invoice_date', 'left_address', 'right_address', 'due_date', 'terms',)
 
+
 class LineItemForm(forms.ModelForm):
+
     class Meta:
         model = LineItem
+
     def __init__(self, *args, **kwargs):
         super(LineItemForm, self).__init__(*args, **kwargs)
         self.fields['name'].widget.attrs['cols'] = 50
         self.fields['name'].widget.attrs['rows'] = 3
+
 
 class ReducedLineItemForm(LineItemForm):
     class Meta:
@@ -32,11 +38,13 @@ class ReducedLineItemForm(LineItemForm):
     #     self.fields['name'].widget.attrs['cols'] = 60
     #     self.fields['name'].widget.attrs['rows'] = 3
 
+
 LineItemFormset = inlineformset_factory(
     Invoice, LineItem,
     fields=('name', 'description', 'price', 'quantity', 'taxable', ),
     extra=0
 )
+
 
 class ImportDataForm(forms.Form):
     attachment = forms.FileField()
@@ -46,4 +54,3 @@ class ImportDataForm(forms.Form):
         xls_importer = XlsImporter(request.user, attachment, klass)
         count = xls_importer.import_all_rows()
         return count
-
