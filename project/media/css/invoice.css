@@ -12,7 +12,6 @@ table {
     display: inline;
     list-style-type: none;
     padding-left: 10px;
-    font-size: 0.7em;
 }
 
 #invoice-container {
@@ -23,35 +22,35 @@ table {
     -moz-box-shadow: 5px 5px 5px #999;
     -webkit-box-shadow: 5px 5px 5px #999;
     box-shadow: 5px 5px 5px #999;
-    height: 1300px;
-    width: 950px;
+    width: 700px;
+    height: 1000px;
 }
 
 #invoice-wrapper {
-    height: 800px;
-    width: 800px;
+    width: 600px;
     margin: 0 auto;
 }
 
-#invoice-wrapper #logo      { height: 100px; }
-#invoice-wrapper #header    { height: 220px; }
-#invoice-wrapper #body      { height: 700px; }
+#invoice-wrapper #logo      { height: 140px; }
+#invoice-wrapper #header    { height: 180px; }
+#invoice-wrapper #body      { height: 480px; }
 #invoice-wrapper #bottom    { height: 30px; }
-#invoice-wrapper #terms     { height: 100px; }
+#invoice-wrapper #terms     { height: 60px; }
 
 #invoice-wrapper>div {
     vertical-align: top;
 }
 
 #invoice-wrapper #logo img {
+    padding-top: 20px;
     float: right;
 }
 
 #invoice-wrapper #draft {
     color: #f33;
     border: 3px solid #f33;
-    width: 400px;
-    height: 50px;
+    width: 280px;
+    height: 40px;
     text-align: center;
     margin: 5px;
     padding-top: 20px;
@@ -78,9 +77,17 @@ table {
     font-weight: bold;
 }
 
+#invoice-wrapper #terms {
+    font-size: 90%;
+    line-height: 1.1em;
+}
+
 #invoice-wrapper #footer {
-    border-top: 1px solid #aaa;
+    border-top: 1px solid #F3A100;
     text-align: center;
+    font-size: 90%;
+    line-height: 1.1em;
+    padding-top: 3px;
 }
 
 .invoice .item-row.to-be-deleted {
@@ -142,7 +149,7 @@ table {
 
 .invoice {
     font-family: Arial;
-    font-size: 1.2em;
+    font-size: 0.9em;
     margin: 0px;
     padding: 0;
 }
