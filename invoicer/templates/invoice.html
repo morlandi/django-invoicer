@@ -51,6 +51,7 @@
     <ul id="nav">
         <li><a href="/">{% trans 'Home' %}</a></li>
         <li><a href="{% url admin:invoicer_invoice_change invoice.pk %}">{% trans 'View Invoice in admin' %}</a></li>
+        <li><a href="javascript:window.print()">{% trans 'Print' %}</a></li>
     </ul>
 {% endblock %}
 {% block footer %}{% endblock %}
@@ -203,6 +204,9 @@
             if ( element.hasClass('recalc') ) {
                 recalcRow(element);
             }
+            if ( element.hasClass('recalcTotal') ) {
+                calculateTotals();
+            }
             updateDueDatePrompt();
         }
         else {
@@ -230,7 +234,7 @@
     // Update invoice totals on client
     calculateTotals = function() {
         var table = document.id('items');
-        var tax_rate = number_parse(table.getElement('span.tax_rate').get('text')) / 100.0;
+        var tax_rate = number_parse(table.getElement('span#tax_rate').get('text')) / 100.0;
         var subtotal = 0.0;
         var tax = 0.0;
 
@@ -555,7 +559,7 @@
                 </tr>
                 <tr>
                     <td class="blank"> </td>
-                    <td colspan="2" class="total-line">{% trans 'VAT' %} (<span class="tax_rate">{{ invoice.tax_rate|floatformatex:2 }}</span>%)</td>
+                    <td colspan="2" class="total-line">{% trans 'VAT' %} (<span id="tax_rate" class="invoice_field numeric editable recalcTotal">{{ invoice.tax_rate|floatformatex:2 }}</span>%)</td>
                     <td class="numeric total-value tax">{{ invoice.tax|floatformatex:2 }}</td>
                     <td colspan="2" class="blank"> </td>
                 </tr>

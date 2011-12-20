@@ -2,17 +2,15 @@
 # -*- coding: utf-8 -*-
 import time
 from django import dispatch
-from django.core.signals import request_started
-from django.test.signals import template_rendered
 from django.conf import settings
 from django.db import connection
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 
-from django.db import connection
 #from django.utils.log import getLogger
 
 #logger = getLogger(__name__)
+
 
 ##########################################################################################################
 # http://dabapps.com/blog/logging-sql-queries-django-13/
@@ -29,7 +27,7 @@ class QueryCountDebugMiddleware(object):
             total_time = 0
 
             try:
-                if len(connection.queries)==1:
+                if len(connection.queries) == 1:
                     if connection.queries[0]['raw_sql'].startswith('SELECT "django_session"'):
                         return response
             except:
@@ -69,7 +67,7 @@ if USE_PYGMENTS:
     WRAP = 120
     STYLE = get_style_by_name('colorful')
 
-HEIGHT = '240px' # or '100%' if full height is wished
+HEIGHT = '240px'  # or '100%' if full height is wished
 
 TEMPLATE = """
 <hr />
@@ -131,10 +129,13 @@ if Template.render != instrumented_test_render:
     Template.render = instrumented_test_render
 # MONSTER monkey-patch
 old_template_init = Template.__init__
+
+
 def new_template_init(self, template_string, origin=None, name='<Unknown Template>'):
     old_template_init(self, template_string, origin, name)
     self.origin = origin
 Template.__init__ = new_template_init
+
 
 class DebugFooter:
     def process_request(self, request):
@@ -210,10 +211,10 @@ def highlight_sql(sql):
         sql = reformat_sql(sql)
     return sql
 
+
 def reformat_sql(sql):
     sql = sql.replace('`,`', '`, `')
     sql = sql.replace('` FROM `', '` \n  FROM `')
     sql = sql.replace('` WHERE ', '` \n  WHERE ')
     sql = sql.replace(' ORDER BY ', ' \n  ORDER BY ')
     return sql
-

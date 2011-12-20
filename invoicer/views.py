@@ -82,7 +82,7 @@ def edit_invoice(request, year, number):
                     "value": request.POST["_value"],
                     "element_id": request.POST["_element_id"]
                 }
-                return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
+                return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',', ':')), mimetype='application/json')
         else:
             for field in form:
                 if field.errors:
@@ -92,8 +92,9 @@ def edit_invoice(request, year, number):
                     if field.errors:
                         errors[field.html_name] = field.errors.as_text()
 
-    response = {"status":"error", "errors":errors}
-    return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',',':')), mimetype='application/json')
+    response = {"status": "error", "errors": errors}
+    return HttpResponse(simplejson.dumps(response, ensure_ascii=False, separators=(',', ':')), mimetype='application/json')
+
 
 @login_required
 @csrf_exempt

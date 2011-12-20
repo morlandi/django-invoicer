@@ -15,7 +15,7 @@ class InvoiceCreationForm(forms.ModelForm):
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = ('invoice_date', 'left_address', 'right_address', 'due_date', 'terms',)
+        fields = ('invoice_date', 'left_address', 'right_address', 'due_date', 'terms', 'tax_rate')
 
 
 class LineItemForm(forms.ModelForm):
