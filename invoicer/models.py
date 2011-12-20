@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib import messages
 from datetime import date
 from decimal import Decimal
 from django.db.models import signals
@@ -6,12 +7,64 @@ from invoicer.utils import generate_next_invoice_number
 from invoicer.handlers import organize_files_by_pk
 from django.utils.translation import ugettext_lazy as _
 from positions.fields import PositionField
+from django.contrib.auth.models import User
 
-__all__ = ['Client', 'Company', 'Terms', 'LineItem', 'InvoiceManager',
-            'Invoice', 'Item']
+__all__ = ['Client', 'Company', 'Terms', 'LineItem', 'Invoice', 'Item']  ## 'InvoiceManager',
 
 
-class Client(models.Model):
+class Company(models.Model):
+    name = models.CharField(max_length=128)
+    authorized_users = models.ManyToManyField(User, verbose_name=_(u'Authorized Users'))
+    location = models.CharField(max_length=60, blank=True)
+    email = models.EmailField(max_length=80, blank=True)
+    invoice_tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
+    use_compact_invoice = models.BooleanField(default=True)
+    logo = models.ImageField(max_length=512, blank=True, default='', upload_to='logo')
+    invoice_footer = models.TextField(blank=True)
+    bank_address = models.TextField(blank=True)
+    custom_styles = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Companies"
+
+    def __unicode__(self):
+        return self.name
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('invoicer:company', (), {'id': self.id})
+
+signals.post_save.connect(organize_files_by_pk, sender=Company)
+
+
+class CompanySpecificBaseManager(models.Manager):
+
+    def for_user(self, request):
+        """
+        Returns a QuerySet for the current user.
+        """
+        from invoicer.utils import get_active_company
+        queryset = super(CompanySpecificBaseManager, self).get_query_set()
+        try:
+            active_company = get_active_company(request)
+        except Exception, e:
+            messages.error(request, e.message)
+            active_company = None
+        queryset = queryset.filter(company=active_company)
+        return queryset
+
+
+class CompanySpecificBaseModel(models.Model):
+
+    class Meta:
+        abstract = True
+
+    objects = CompanySpecificBaseManager()
+
+    company = models.ForeignKey(Company, editable=False, db_index=True, verbose_name=_(u'Company'))
+
+
+class Client(CompanySpecificBaseModel):
     name = models.CharField(max_length=128, unique=True)
     vat_id = models.CharField(max_length=32)
     fiscal_code = models.CharField(max_length=32, blank=True)
@@ -40,30 +93,7 @@ class Client(models.Model):
         return self.name
 
 
-class Company(models.Model):
-    name = models.CharField(max_length=128)
-    location = models.CharField(max_length=60, blank=True)
-    email = models.EmailField(max_length=80, blank=True)
-    invoice_tax_rate = models.DecimalField(max_digits=4, decimal_places=2)
-    use_compact_invoice = models.BooleanField(default=False)
-    logo = models.ImageField(max_length=512, blank=True, default='', upload_to='logo')
-    invoice_footer = models.TextField(blank=True)
-    bank_address = models.TextField(blank=True)
-
-    class Meta:
-        verbose_name_plural = "Companies"
-
-    def __unicode__(self):
-        return self.name
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('invoicer:company', (), {'id': self.id})
-
-signals.post_save.connect(organize_files_by_pk, sender=Company)
-
-
-class Terms(models.Model):
+class Terms(CompanySpecificBaseModel):
     name = models.CharField(max_length=128)
     description = models.TextField(max_length=512)
 
@@ -74,7 +104,7 @@ class Terms(models.Model):
         return self.name
 
 
-class AbstractItem(models.Model):
+class BaseItem(models.Model):
     name = models.TextField(blank=True)
     description = models.CharField(max_length=256, blank=True)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
@@ -87,7 +117,7 @@ class AbstractItem(models.Model):
         return unicode(self.name)
 
 
-class LineItem(AbstractItem):
+class LineItem(BaseItem):
     invoice = models.ForeignKey("Invoice", related_name="line_items", editable=False)
     item = models.ForeignKey("Item", blank=True, null=True)
     quantity = models.DecimalField(max_digits=8, decimal_places=2, default="1")
@@ -129,19 +159,18 @@ class LineItem(AbstractItem):
         self.invoice._update_cached_values()
 
 
-class InvoiceManager(models.Manager):
-    def get_query_set(self):
-        return super(InvoiceManager, self).get_query_set().none()
+# class InvoiceManager(models.Manager):
+#     def get_query_set(self):
+#         return super(InvoiceManager, self).get_query_set().none()
 
 
-class Invoice(models.Model):
-    objects = models.Manager()
-    manager = InvoiceManager()
+class Invoice(CompanySpecificBaseModel):
+    # objects = models.Manager()
+    # manager = InvoiceManager()
 
-    serial = models.CharField(max_length=60, blank=True, unique=True)
+    serial = models.CharField(max_length=60, blank=True)
     number = models.IntegerField(blank=True, help_text='leave empty for automatic assignment')
     year = models.IntegerField()
-    company = models.ForeignKey(Company, related_name='invoices')
     invoice_date = models.DateField(default=date.today)
     client = models.ForeignKey(Client, related_name='invoices')
     location = models.CharField(max_length=60, blank=True)
@@ -211,5 +240,5 @@ class Invoice(models.Model):
         return dirty
 
 
-class Item(AbstractItem):
+class Item(BaseItem, CompanySpecificBaseModel):
     pass

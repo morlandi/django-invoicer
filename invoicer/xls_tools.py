@@ -5,7 +5,7 @@ from invoicer.models import Invoice
 from invoicer.models import LineItem
 from time import strptime
 from decimal import Decimal
-from invoicer.utils import get_company
+from invoicer.utils import get_active_company
 from datetime import date
 
 ##########################################################################################
@@ -15,7 +15,7 @@ from datetime import date
 class XlsImporter(object):
 
     def __init__(self, request, attachment, klass):
-        self.requeste = request
+        self.request = request
         self.attachment = attachment
         self.klass = klass
         self.columns = {}
@@ -91,7 +91,8 @@ class XlsImporter(object):
             administrative_address = address2
             delivery_address = address1
 
-        client = Client(name=name, vat_id=vat_id, fiscal_code=fiscal_code, email=email,
+        company = get_active_company(self.request)
+        client = Client(company=company, name=name, vat_id=vat_id, fiscal_code=fiscal_code, email=email,
             administrative_address=administrative_address, delivery_address=delivery_address, bank_address=bank_address)
         client.save()
 
@@ -100,9 +101,9 @@ class XlsImporter(object):
         def client_lookup(client_name):
             return Client.objects.get(name=client_name)
 
+        company = get_active_company(self.request)
         number = self._read_cell_as_int(nrow, 'n.')
         year = self._read_cell_as_int(nrow, 'year')
-        company = get_company()
         invoice_date = self._read_cell_as_date(nrow, 'data')
         client = client_lookup(self._read_cell(nrow, 'cliente'))
         location = company.location

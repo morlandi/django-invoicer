@@ -6,6 +6,7 @@ from django.template.context import RequestContext
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 
+
 @staff_member_required
 def admin_import_data(request, model_admin, next):
 
@@ -15,10 +16,10 @@ def admin_import_data(request, model_admin, next):
     # see http://www.slideshare.net/lincolnloop/customizing-the-django-admin
     opts = model_admin.model._meta
     admin_site = model_admin.admin_site
-    has_perm = request.user.has_perm(opts.app_label+'.'+opts.get_change_permission())
+    has_perm = request.user.has_perm(opts.app_label + '.' + opts.get_change_permission())
 
     if request.method == 'POST':
-        form = ImportDataForm(request.POST,request.FILES)
+        form = ImportDataForm(request.POST, request.FILES)
         if form.is_valid():
             count = form.save(request, klass)
             text = _(u'%d rows successfully imported') % count
@@ -37,5 +38,5 @@ def admin_import_data(request, model_admin, next):
         'form': form,
     }
 
-    return render_to_response('/admin/invoicer/import_data.html',context,
+    return render_to_response('/admin/invoicer/import_data.html', context,
         context_instance=RequestContext(request))

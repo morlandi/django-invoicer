@@ -1,12 +1,14 @@
 from django.contrib import admin
 
 from invoicer.models import LineItem
+from invoicer.models import Item
 from invoicer.models import Invoice
 from invoicer.models import Company
 from invoicer.models import Client
 from invoicer.models import Terms
 from invoicer.forms import InvoiceCreationForm
-from invoicer.utils import get_company
+from invoicer.utils import get_active_company
+from invoicer.utils import get_active_company_pk
 from invoicer.admin_views import admin_import_data
 from django.utils.translation import ugettext_lazy as _
 from django.db import transaction
@@ -30,7 +32,12 @@ from invoicer.utils import duplicate_invoice
 class LineItemInline(admin.TabularInline):
     model = LineItem
     fields = ("item", "name", "price", "quantity", "taxable", "position",)
-    extra = 1
+    extra = 0
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "item":
+            kwargs["queryset"] = Item.objects.for_user(request)
+        return super(LineItemInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class InvoiceInline(admin.TabularInline):
@@ -63,9 +70,38 @@ class CompanyAdmin(admin.ModelAdmin):
     # )
     model = Company
     #inlines = (StylesheetInline,)
+    filter_horizontal = ('authorized_users', )
 
 
-class ClientAdmin(admin.ModelAdmin):
+class CompanySpecificBaseModelAdmin(admin.ModelAdmin):
+
+    # filter main object list based on active system
+    def queryset(self, request):
+        return self.model.objects.for_user(request)
+
+    def save_model(self, request, obj, form, change):
+        # automatically assign the active system to the created/modified object
+        try:
+            active_company = get_active_company(request)
+        except Exception, e:
+            messages.error(request, e.message)
+            return
+        obj.company = active_company
+        super(CompanySpecificBaseModelAdmin, self).save_model(request, obj, form, change)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "company":
+            kwargs["queryset"] = Company.objects.filter(pk=get_active_company_pk(request))
+        elif db_field.name == "client":
+            kwargs["queryset"] = Client.objects.for_user(request)
+        elif db_field.name == "item":
+            kwargs["queryset"] = Item.objects.for_user(request)
+        elif db_field.name == "terms":
+            kwargs["queryset"] = Terms.objects.for_user(request)
+        return super(CompanySpecificBaseModelAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class ClientAdmin(CompanySpecificBaseModelAdmin):
     model = Client
     list_display = ('name', 'vat_id', 'fiscal_code', 'receipts_to_date')
     search_fields = ('name', '=vat_id', '=fiscal_code', )
@@ -104,11 +140,15 @@ class ClientAdmin(admin.ModelAdmin):
         return response
 
 
-class TermsAdmin(admin.ModelAdmin):
+class TermsAdmin(CompanySpecificBaseModelAdmin):
     model = Terms
 
 
-class InvoiceAdmin(admin.ModelAdmin):
+class ItemAdmin(CompanySpecificBaseModelAdmin):
+    model = Item
+
+
+class InvoiceAdmin(CompanySpecificBaseModelAdmin):
     add_form = InvoiceCreationForm
     model = Invoice
     list_display = ("__unicode__", 'view_on_site', "number", "year", "client", "net_total", "gross_total", "locked", "paid", "invoice_date", "due_date", )
@@ -155,7 +195,7 @@ class InvoiceAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.year = obj.invoice_date.year
-        obj.company = get_company()
+        obj.company = get_active_company(request)
         if not change:
             # new invoice: fill attributes with suitable defaults
             if len(obj.client.delivery_address) == 0:
@@ -241,3 +281,4 @@ admin.site.register(Company, CompanyAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(Terms, TermsAdmin)
+admin.site.register(Item, ItemAdmin)

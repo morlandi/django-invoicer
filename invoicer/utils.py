@@ -2,19 +2,40 @@ from django.db.models.aggregates import Max
 from datetime import datetime
 
 
-def get_company():
-    from invoicer.models import Company
-    companies = Company.objects.all()
-    if len(companies) != 1:
-        raise Exception('Please configure one single company')
-    return companies[0]
+# def get_company():
+#     from invoicer.models import Company
+#     companies = Company.objects.all()
+#     if len(companies) != 1:
+#         raise Exception('Please configure one single company')
+#     return companies[0]
+
+
+def get_active_company(request):
+    """ Return active company based on user's profile
+    """
+    from project.models import get_user_profile_ex
+    profile = get_user_profile_ex(request.user)
+    try:
+        company = profile.active_company
+    except:
+        company = None
+    if company is None:
+        raise Exception('Please select active company in user\'s profile')
+    return company
+
+
+def get_active_company_pk(request):
+    """ Return active company pk based on user's profile
+    """
+    active_company = get_active_company(request)
+    return active_company and active_company.pk or None
 
 
 def generate_next_invoice_number(obj):
     """    Generate a suitable invoice number for given object;
            Strategy: find out current max value for the year, then add 1
     """
-    queryset = obj.__class__.objects.filter(year=obj.year)
+    queryset = obj.__class__.objects.filter(year=obj.year, company=obj.company)
     max = queryset.aggregate(Max('number')).values()[0]
     if max is None:
         max = 0

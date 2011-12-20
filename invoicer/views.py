@@ -20,6 +20,7 @@ from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 from django.template.context import RequestContext
 from django.shortcuts import render_to_response
+from invoicer.utils import get_active_company
 
 
 def dump_post_items(request, prompt):
@@ -40,7 +41,7 @@ def dump_post_items(request, prompt):
 def view_invoice(request, year, number):
 
     invoices = Invoice.objects.select_related()
-    invoice = get_object_or_404(invoices, year=int(year), number=int(number))
+    invoice = get_object_or_404(invoices, year=int(year), number=int(number), company=get_active_company(request))
     formset = LineItemFormset(instance=invoice)
     context = {
         'invoice': invoice,
@@ -48,6 +49,7 @@ def view_invoice(request, year, number):
         "formset": formset,
         "date_format": i18n_date_format(request),
         "compact": invoice.company.use_compact_invoice,
+        "custom_styles": invoice.company.custom_styles,
     }
     return render_to_response('invoice.html', context, context_instance=RequestContext(request))
 
@@ -59,7 +61,7 @@ def edit_invoice(request, year, number):
     if not request.user.is_staff:
         raise Exception(unicode(_(u'Not authorized')))
     invoices = Invoice.objects.select_related()
-    invoice = get_object_or_404(invoices, year=int(year), number=int(number))
+    invoice = get_object_or_404(invoices, year=int(year), number=int(number), company=get_active_company(request))
     original_invoice_year = invoice.invoice_date.year
     errors = {}
 
@@ -100,19 +102,19 @@ def edit_invoice(request, year, number):
 @csrf_exempt
 def add_line(request, year, number):
 
-    dump_post_items(request,'add_line')
+    dump_post_items(request, 'add_line')
 
     if not request.user.is_staff:
         raise Exception(unicode(_(u'Not authorized')))
     formClass = LineItemForm
-    invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
+    invoice = get_object_or_404(Invoice, year=int(year), number=int(number), company=get_active_company(request))
     if invoice.company.use_compact_invoice:
         formClass = ReducedLineItemForm
     if request.method == "POST":
         if invoice.locked:
             messages.error(request, _(u'Locked'))
         else:
-            line = formClass(request.POST, instance=LineItem(invoice=invoice))
+            line = formClass(invoice, request.POST, instance=LineItem(invoice=invoice))
             if line.is_valid():
                 line.save()
                 messages.info(request, 'New line added')
@@ -121,7 +123,7 @@ def add_line(request, year, number):
                     messages.error(request, '%s: %s' % (key, strip_tags(line.errors[key])))
         return HttpResponseRedirect(invoice.get_absolute_url())
     else:
-        form = formClass()
+        form = formClass(invoice)
         return HttpResponse(form.as_table())
 
 @login_required
@@ -130,7 +132,7 @@ def delete_lines(request, year, number):
     try:
         if not request.user.is_staff:
             raise Exception(unicode(_(u'Not authorized')))
-        invoice = get_object_or_404(Invoice, year=int(year), number=int(number))
+        invoice = get_object_or_404(Invoice, year=int(year), number=int(number), company=get_active_company(request))
         if invoice.locked:
             messages.error(request, _(u'Locked'))
         else:
@@ -151,6 +153,7 @@ def delete_lines(request, year, number):
     except Exception, e:
         messages.error(request, e.message)
     return HttpResponse('ok')
+
 
 def paginate_invoices(request, entity, page):
     set_cookie = False
@@ -173,18 +176,22 @@ def paginate_invoices(request, entity, page):
         resp.set_cookie("per_page", per_page)
     return resp
 
+
 def client_invoices(request, id, page):
     client = get_object_or_404(Client.objects.select_related(), id=id)
     return paginate_invoices(request, client, page)
+
 
 def company_invoices(request, id, page, per_page = 20):
     company = get_object_or_404(Company.objects.select_related(), id=id)
     return paginate_invoices(request, company, page)
 
+
 def client_overview(request, id):
     client = get_object_or_404(Client.objects.select_related(), id=id)
     context = {'entity':client}
     return render(request, 'client.html', context)
+
 
 def company_overview(request, id):
     company = get_object_or_404(Company.objects.select_related(), id=id)

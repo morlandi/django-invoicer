@@ -23,10 +23,11 @@ class LineItemForm(forms.ModelForm):
     class Meta:
         model = LineItem
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, invoice, *args, **kwargs):
         super(LineItemForm, self).__init__(*args, **kwargs)
         self.fields['name'].widget.attrs['cols'] = 50
         self.fields['name'].widget.attrs['rows'] = 3
+        self.fields['item'].queryset = Item.objects.filter(company=invoice.company)
 
 
 class ReducedLineItemForm(LineItemForm):
@@ -51,6 +52,6 @@ class ImportDataForm(forms.Form):
 
     def save(self, request, klass):
         attachment = self.cleaned_data['attachment']
-        xls_importer = XlsImporter(request.user, attachment, klass)
+        xls_importer = XlsImporter(request, attachment, klass)
         count = xls_importer.import_all_rows()
         return count
